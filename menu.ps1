@@ -535,9 +535,9 @@ function Loop-Menu {
             '12' { Acao-12-DebloatSycnex }
             '13' { Acao-13-BackupRobocopy }
             '14' { Acao-14-ExclusaoForcadaPasta }
-            'S' { break }
-            'Q' { break }
-            '0' { break }
+            'S' { return }
+            'Q' { return }
+            '0' { return }
             default { Write-Warn "Opção inválida."; Start-Sleep -Milliseconds 900 }
         }
     } while ($true)

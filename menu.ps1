@@ -1,8 +1,11 @@
-﻿#requires -version 5.1
+﻿# Script de menu de manutenção do Windows
+#requires -version 5.1
 <#
 .SYNOPSIS
     Menu de Manutenção do Windows - Instalador e Atualizador de Aplicativos
 #>
+
+Clear-Host
 
 #region Configuração básica (encoding, log, admin)
 

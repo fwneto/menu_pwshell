@@ -151,15 +151,74 @@ function Acao-4-WingetUninstall {
     if (-not (Ensure-Winget)) { Pause-Enter; return }
     Write-Info "Listando pacotes winget instalados..."
     try {
-        $apps = winget list --accept-source-agreements | Select-Object -Skip 1
-        if (-not $apps) { Write-Warn "Nenhum app encontrado."; Pause-Enter; return }
-        $i=1
-        $list = @()
-        foreach ($ln in $apps) {
-            $t = $ln.Trim()
-            if ($t) { $list += [PSCustomObject]@{Index=$i; Line=$t}; $i++ }
+        $rawJson = winget list --accept-source-agreements --output json | Out-String
+        if (-not $rawJson.Trim()) { Write-Warn "Nenhum app encontrado."; Pause-Enter; return }
+
+        try {
+            $parsed = $rawJson | ConvertFrom-Json
+        } catch {
+            Write-Err "Não foi possível interpretar a saída do winget."; Pause-Enter; return
         }
-        $list | ForEach-Object { Write-Host ("[{0,2}] {1}" -f $_.Index, $_.Line) }
+
+        $packages = @()
+        if ($parsed.Sources) {
+            foreach ($src in $parsed.Sources) {
+                if ($src.Packages) { $packages += $src.Packages }
+            }
+        } elseif ($parsed.Packages) {
+            $packages = $parsed.Packages
+        } elseif ($parsed -is [System.Collections.IEnumerable]) {
+            $packages = $parsed
+        }
+
+        $normalized = @()
+        foreach ($pkg in $packages) {
+            $pkgId = $null
+            if ($pkg.Id) { $pkgId = [string]$pkg.Id }
+            elseif ($pkg.PackageIdentifier) { $pkgId = [string]$pkg.PackageIdentifier }
+            elseif ($pkg.PackageId) { $pkgId = [string]$pkg.PackageId }
+
+            $pkgName = $null
+            if ($pkg.Name) { $pkgName = [string]$pkg.Name }
+            elseif ($pkg.PackageName) { $pkgName = [string]$pkg.PackageName }
+
+            $pkgVersion = $null
+            if ($pkg.Version) { $pkgVersion = [string]$pkg.Version }
+            elseif ($pkg.InstalledVersion) { $pkgVersion = [string]$pkg.InstalledVersion }
+
+            if (-not $pkgId -or -not $pkgName) { continue }
+
+            $normalized += [PSCustomObject]@{
+                Id      = $pkgId
+                Name    = $pkgName
+                Version = $pkgVersion
+                Source  = $pkg.Source
+            }
+        }
+
+        if (-not $normalized) { Write-Warn "Nenhum app encontrado."; Pause-Enter; return }
+
+        $list = @()
+        $i = 1
+        foreach ($pkg in ($normalized | Sort-Object Name, Id)) {
+            $displayName = $pkg.Name
+            if ($displayName.Length -gt 45) { $displayName = $displayName.Substring(0, 42) + '...' }
+            $actualVersion = $pkg.Version
+            $displayVersion = if ($actualVersion) { $actualVersion } else { '-' }
+            $list += [PSCustomObject]@{
+                Index   = $i
+                Name    = $pkg.Name
+                Version = $actualVersion
+                Id      = $pkg.Id
+                Display = $displayName
+                DisplayVersion = $displayVersion
+            }
+            $i++
+        }
+
+        $list | ForEach-Object {
+            Write-Host ("[{0,3}] {1,-45} {2,-18} {3}" -f $_.Index, $_.Display, $_.DisplayVersion, $_.Id)
+        }
 
         $sel = Read-Host "`nDigite o(s) número(s) para desinstalar (separados por espaço ou vírgula). ENTER para cancelar"
         if ([string]::IsNullOrWhiteSpace($sel)) { return }
@@ -170,14 +229,11 @@ function Acao-4-WingetUninstall {
         foreach ($idx in $idxs) {
             $obj = $list | Where-Object { $_.Index -eq $idx }
             if ($obj) {
-                # tenta extrair o ID do winget (última coluna costuma ser Id)
-                $parts = ($obj.Line -split '\s{2,}') | Where-Object { $_ -ne "" }
-                $id = $parts[-1]
-                if ($id) { $targets += $id }
+                $targets += $obj.Id
             }
         }
 
-        if (-not $targets) { Write-Warn "Não foi possível mapear IDs."; Pause-Enter; return }
+        if (-not $targets) { Write-Warn "Nenhum pacote correspondente encontrado."; Pause-Enter; return }
 
         Write-Host "`nSelecionados para desinstalar (winget):" -ForegroundColor Yellow
         $targets | ForEach-Object { Write-Host " - $_" }
@@ -187,7 +243,7 @@ function Acao-4-WingetUninstall {
 
         foreach ($id in $targets) {
             try {
-                winget uninstall --id "$id" --silent --accept-source-agreements --accept-package-agreements
+                winget uninstall --id "$id" --exact --silent --accept-source-agreements --accept-package-agreements
                 Write-Ok "Desinstalado (winget): $id"
             } catch {
                 Write-Err "Falha ao desinstalar ${id}: $($_.Exception.Message)"

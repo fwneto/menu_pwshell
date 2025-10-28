@@ -1,13 +1,13 @@
-﻿# Script de menu de manutenção do Windows
+# Script de menu de manutencao do Windows
 #requires -version 5.1
 <#
 .SYNOPSIS
-    Menu de Manutenção do Windows - Instalador e Atualizador de Aplicativos
+    Menu de Manutencao do Windows - Instalador e Atualizador de Aplicativos
 #>
 
 Clear-Host
 
-#region Configuração básica (encoding, log, admin)
+#region Configuracao basica (encoding, log, admin)
 
 try {
     [Console]::OutputEncoding = New-Object System.Text.UTF8Encoding $false
@@ -38,19 +38,19 @@ function Pause-Enter {
     Read-Host "Pressione ENTER para continuar" | Out-Null
 }
 
-# Elevação para administrador
+# Elevacao para administrador
 function Ensure-Admin {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
     $p =  New-Object Security.Principal.WindowsPrincipal($id)
     if (-not $p.IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)) {
-        Write-Warn "Este script precisa de privilégios de administrador. Pedindo elevação..."
+        Write-Warn "Este script precisa de privilegios de administrador. Pedindo elevacao..."
         $psi = New-Object System.Diagnostics.ProcessStartInfo "powershell"
         $psi.Arguments = "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`""
         $psi.Verb = "runas"
         try {
             [Diagnostics.Process]::Start($psi) | Out-Null
         } catch {
-            Write-Err "Elevação negada. Encerrando."
+            Write-Err "Elevacao negada. Encerrando."
         }
         Stop-Transcript | Out-Null
         exit
@@ -64,14 +64,14 @@ try { Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process -Force -ErrorAc
 
 #endregion
 
-#region Utilitários Winget/Choco
+#region Utilitarios Winget/Choco
 
 function Ensure-Winget {
     try {
         winget --version *>$null
         return $true
     } catch {
-        Write-Err "Winget não encontrado. Instale o App Installer pela Microsoft Store."
+        Write-Err "Winget nao encontrado. Instale o App Installer pela Microsoft Store."
         return $false
     }
 }
@@ -81,7 +81,7 @@ function Ensure-Choco {
         choco -v *>$null
         return $true
     } catch {
-        Write-Warn "Chocolatey não encontrado. Tentando instalar..."
+        Write-Warn "Chocolatey nao encontrado. Tentando instalar..."
         Set-ExecutionPolicy Bypass -Scope Process -Force
         try {
             [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.SecurityProtocolType]::Tls12
@@ -98,14 +98,14 @@ function Ensure-Choco {
 
 #endregion
 
-#region Ações
+#region Acoes
 
 function Acao-1-VerificarWindowsUpdates {
-    Write-Info "Verificando atualizações do Windows..."
+    Write-Info "Verificando atualizacoes do Windows..."
     try {
         Get-WindowsUpdate -AcceptAll -IgnoreReboot -WhatIf
     } catch {
-        Write-Warn "Módulo PSWindowsUpdate não encontrado. Instalando..."
+        Write-Warn "Modulo PSWindowsUpdate nao encontrado. Instalando..."
         try {
             Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -ErrorAction SilentlyContinue | Out-Null
             Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
@@ -120,11 +120,11 @@ function Acao-1-VerificarWindowsUpdates {
 }
 
 function Acao-2-InstalarWindowsUpdates {
-    Write-Info "Instalando atualizações do Windows..."
+    Write-Info "Instalando atualizacoes do Windows..."
     try {
         Get-WindowsUpdate -AcceptAll -IgnoreReboot -Install
     } catch {
-        Write-Warn "Módulo PSWindowsUpdate não encontrado. Instalando..."
+        Write-Warn "Modulo PSWindowsUpdate nao encontrado. Instalando..."
         try {
             Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -ErrorAction SilentlyContinue | Out-Null
             Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
@@ -132,7 +132,7 @@ function Acao-2-InstalarWindowsUpdates {
             Import-Module PSWindowsUpdate
             Get-WindowsUpdate -AcceptAll -IgnoreReboot -Install
         } catch {
-            Write-Err "Erro ao instalar atualizações: $($_.Exception.Message)"
+            Write-Err "Erro ao instalar atualizacoes: $($_.Exception.Message)"
         }
     }
     Pause-Enter
@@ -143,7 +143,7 @@ function Acao-3-WingetUpgrade {
     Write-Info "Atualizando todos os aplicativos via winget..."
     try {
         winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
-        Write-Ok "Atualização concluída (winget)."
+        Write-Ok "Atualizacao concluida (winget)."
     } catch {
         Write-Err "Falha no winget upgrade: $($_.Exception.Message)"
     }
@@ -160,7 +160,7 @@ function Acao-4-WingetUninstall {
         try {
             $parsed = $rawJson | ConvertFrom-Json
         } catch {
-            Write-Err "Não foi possível interpretar a saída do winget."; Pause-Enter; return
+            Write-Err "Nao foi possivel interpretar a saida do winget."; Pause-Enter; return
         }
 
         $packages = @()
@@ -223,10 +223,10 @@ function Acao-4-WingetUninstall {
             Write-Host ("[{0,3}] {1,-45} {2,-18} {3}" -f $_.Index, $_.Display, $_.DisplayVersion, $_.Id)
         }
 
-        $sel = Read-Host "`nDigite o(s) número(s) para desinstalar (separados por espaço ou vírgula). ENTER para cancelar"
+        $sel = Read-Host "`nDigite o(s) numero(s) para desinstalar (separados por espaco ou virgula). ENTER para cancelar"
         if ([string]::IsNullOrWhiteSpace($sel)) { return }
         $idxs = $sel -split '[, ]+' | Where-Object { $_ -match '^\d+$' } | ForEach-Object { [int]$_ } | Sort-Object -Unique
-        if (-not $idxs) { Write-Warn "Nenhuma seleção válida."; Pause-Enter; return }
+        if (-not $idxs) { Write-Warn "Nenhuma selecao valida."; Pause-Enter; return }
 
         $targets = @()
         foreach ($idx in $idxs) {
@@ -242,7 +242,7 @@ function Acao-4-WingetUninstall {
         $targets | ForEach-Object { Write-Host " - $_" }
 
         $conf = Read-Host "`nConfirmar? [S/n]"
-        if ($conf -and $conf.Trim().ToUpper() -eq 'N') { Write-Host "Operação cancelada."; Pause-Enter; return }
+        if ($conf -and $conf.Trim().ToUpper() -eq 'N') { Write-Host "Operacao cancelada."; Pause-Enter; return }
 
         foreach ($id in $targets) {
             try {
@@ -253,7 +253,7 @@ function Acao-4-WingetUninstall {
             }
         }
     } catch {
-        Write-Err "Erro no fluxo de desinstalação winget: $($_.Exception.Message)"
+        Write-Err "Erro no fluxo de desinstalacao winget: $($_.Exception.Message)"
     }
     Pause-Enter
 }
@@ -266,17 +266,81 @@ function Acao-5-ChocoInstalarVerificar {
 
 function Acao-6-ChocoInstalarProgramas {
     if (-not (Ensure-Choco)) { Pause-Enter; return }
-    $lista = @(
-        '7zip','googlechrome','vlc','git','vscode','python','dotnetfx','dotnet-8.0-runtime',
-        'powertoys','rufus','telegram','sumatrapdf','notepadplusplus','cpu-z','gpu-z'
+    $pacotesDesejados = @(
+        '7zip'
+        'googlechrome'
+        'vlc'
+        'dotnetfx'
+        'dotnet-8.0-runtime'
+        'powertoys'
+        'notepadplusplus'
+        'adobereader'
+        'firefox'
+        'zoom'
+        'vcredist140'
+        'teamviewer'
+        'googledrive'
+        'microsoft-teams'
+        'winscp.install'
+        'k-litecodecpackfull'
+        'ffmpeg'
+        'yt-dlp'
+        'aria2'
     )
-    Write-Info "Instalando via Chocolatey: $($lista -join ', ')"
-    foreach ($p in $lista) {
+
+    $pacotes = for ($i = 0; $i -lt $pacotesDesejados.Count; $i++) {
+        [PSCustomObject]@{
+            Numero = $i + 1
+            Id     = $pacotesDesejados[$i]
+        }
+    }
+
+    Write-Host "`nPacotes disponiveis para instalacao:" -ForegroundColor Cyan
+    foreach ($item in $pacotes) {
+        Write-Host ("[{0,2}] {1}" -f $item.Numero, $item.Id)
+    }
+
+    $entrada = Read-Host "`nInforme os numeros dos pacotes a instalar (separados por espaco ou virgula). Digite 'todos' para instalar tudo ou ENTER para cancelar"
+    if ([string]::IsNullOrWhiteSpace($entrada)) {
+        Write-Info "Nenhum pacote selecionado."
+        Pause-Enter
+        return
+    }
+
+    if ($entrada.Trim().ToUpper() -eq 'TODOS') {
+        $selecionados = $pacotes
+    } else {
+        $indicesInformados = $entrada -split '[,; ]+' | Where-Object { $_ -match '^\d+$' } | ForEach-Object { [int]$_ }
+        if (-not $indicesInformados) {
+            Write-Warn "Nenhum numero valido informado."
+            Pause-Enter
+            return
+        }
+
+        $validos = $indicesInformados | Where-Object { $_ -ge 1 -and $_ -le $pacotes.Count } | Sort-Object -Unique
+        if (-not $validos) {
+            Write-Warn "Nenhum numero dentro do intervalo foi informado."
+            Pause-Enter
+            return
+        }
+
+        $invalidos = $indicesInformados | Where-Object { $_ -lt 1 -or $_ -gt $pacotes.Count } | Sort-Object -Unique
+        if ($invalidos) {
+            Write-Warn ("Indices fora do intervalo foram ignorados: {0}" -f ($invalidos -join ', '))
+        }
+
+        $selecionados = foreach ($idx in $validos) {
+            $pacotes[$idx - 1]
+        }
+    }
+
+    Write-Info ("Instalando via Chocolatey: {0}" -f (($selecionados.Id) -join ', '))
+    foreach ($item in $selecionados) {
         try {
-            choco install $p -y --no-progress
-            Write-Ok "Instalado: $p"
+            choco install $item.Id -y --no-progress
+            Write-Ok "Instalado: $($item.Id)"
         } catch {
-            Write-Err "Falha ao instalar ${p}: $($_.Exception.Message)"
+            Write-Err ("Falha ao instalar {0}: {1}" -f $item.Id, $_.Exception.Message)
         }
     }
     Pause-Enter
@@ -287,14 +351,14 @@ function Acao-7-ChocoAtualizarTudo {
     Write-Info "Atualizando todos os pacotes do Chocolatey..."
     try {
         choco upgrade all -y --no-progress
-        Write-Ok "Atualização concluída (Chocolatey)."
+        Write-Ok "Atualizacao concluida (Chocolatey)."
     } catch {
         Write-Err "Falha ao atualizar pacotes: $($_.Exception.Message)"
     }
     Pause-Enter
 }
 
-# <<< NOVA FUNÇÃO ATUALIZADA >>>
+# <<< NOVA FUNCAO ATUALIZADA >>>
 function Acao-8-ChocoDesinstalarPacote {
     if (-not (Ensure-Choco)) { Pause-Enter; return }
     try {
@@ -319,7 +383,7 @@ function Acao-8-ChocoDesinstalarPacote {
         }
 
         if (-not $packages) {
-            Write-Warn "Nenhum pacote identificado na saída do Chocolatey."
+            Write-Warn "Nenhum pacote identificado na saida do Chocolatey."
             Pause-Enter; return
         }
 
@@ -329,12 +393,12 @@ function Acao-8-ChocoDesinstalarPacote {
             Write-Host ("[{0,2}] {1}{2}" -f $_.Index, $_.Name, $ver)
         }
 
-        $sel = Read-Host "`nDigite o(s) número(s) do(s) pacote(s) para desinstalar (separados por espaço ou vírgula). ENTER para cancelar"
+        $sel = Read-Host "`nDigite o(s) numero(s) do(s) pacote(s) para desinstalar (separados por espaco ou virgula). ENTER para cancelar"
         if ([string]::IsNullOrWhiteSpace($sel)) { return }
 
         $indices = $sel -split '[, ]+' | Where-Object { $_ -match '^\d+$' } | ForEach-Object { [int]$_ } | Sort-Object -Unique
         if (-not $indices) {
-            Write-Warn "Nenhum número válido informado."
+            Write-Warn "Nenhum numero valido informado."
             Pause-Enter; return
         }
 
@@ -345,7 +409,7 @@ function Acao-8-ChocoDesinstalarPacote {
         }
 
         if (-not $toUninstall) {
-            Write-Warn "Nenhuma seleção válida."
+            Write-Warn "Nenhuma selecao valida."
             Pause-Enter; return
         }
 
@@ -354,7 +418,7 @@ function Acao-8-ChocoDesinstalarPacote {
 
         $conf = Read-Host "`nConfirmar? [S/n]"
         if ($conf -and $conf.Trim().ToUpper() -eq 'N') {
-            Write-Host "Operação cancelada."
+            Write-Host "Operacao cancelada."
             Pause-Enter; return
         }
 
@@ -380,7 +444,7 @@ function Acao-9-MapearDesmapearUnidade {
         '1' {
             $letra = Read-Host "Letra da unidade (ex: Z:)"
             $path  = Read-Host "Caminho UNC (ex: \\servidor\compartilhamento)"
-            $user  = Read-Host "Usuário (ENTER para atual)"
+            $user  = Read-Host "Usuario (ENTER para atual)"
             $pass  = if ($user) { Read-Host "Senha" } else { $null }
             try {
                 if ($user) {
@@ -402,13 +466,13 @@ function Acao-9-MapearDesmapearUnidade {
                 Write-Err "Falha ao desmapear: $($_.Exception.Message)"
             }
         }
-        default { Write-Warn "Opção inválida."; }
+        default { Write-Warn "Opcao invalida."; }
     }
     Pause-Enter
 }
 
 function Acao-10-LimpezaTemporarios {
-    Write-Info "Limpando arquivos temporários do Windows e usuário..."
+    Write-Info "Limpando arquivos temporarios do Windows e usuario..."
     try {
         $paths = @(
             $env:TEMP, $env:TMP,
@@ -421,7 +485,7 @@ function Acao-10-LimpezaTemporarios {
                 Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
             }
         }
-        Write-Ok "Limpeza concluída."
+        Write-Ok "Limpeza concluida."
     } catch {
         Write-Err "Erro na limpeza: $($_.Exception.Message)"
     }
@@ -429,7 +493,7 @@ function Acao-10-LimpezaTemporarios {
 }
 
 function Acao-11-RemoverPerfisUsuario {
-    $confirm = Read-Host "ATENÇÃO: isto remove perfis de usuário (pastas em C:\Users) que não estejam em uso. Confirmar? [s/N]"
+    $confirm = Read-Host "ATENCAO: isto remove perfis de usuario (pastas em C:\Users) que nao estejam em uso. Confirmar? [s/N]"
     if ($confirm.Trim().ToUpper() -ne 'S') { return }
     try {
         $inUse = (Get-WmiObject -Class Win32_ComputerSystem).UserName
@@ -470,7 +534,7 @@ function Acao-13-BackupRobocopy {
     $log = Join-Path $Global:MW_LogDir ("robocopy_{0:yyyyMMdd_HHmmss}.log" -f (Get-Date))
     try {
         robocopy "$origem" "$dest" /MIR /Z /R:2 /W:2 /FFT /NP /LOG:"$log"
-        Write-Ok "Backup concluído. Log: $log"
+        Write-Ok "Backup concluido. Log: $log"
     } catch {
         Write-Err "Erro no robocopy: $($_.Exception.Message)"
     }
@@ -478,7 +542,7 @@ function Acao-13-BackupRobocopy {
 }
 
 function Acao-14-ExclusaoForcadaPasta {
-    $path = Read-Host "Caminho da pasta para excluir (forçado)"
+    $path = Read-Host "Caminho da pasta para excluir (forcado)"
     if ([string]::IsNullOrWhiteSpace($path)) { return }
     try {
         TAKEOWN /F "$path" /R /D Y | Out-Null
@@ -497,9 +561,9 @@ function Acao-14-ExclusaoForcadaPasta {
 
 function Mostrar-Menu {
     Clear-Host
-    Write-Host "========== MENU DE MANUTENÇÃO ==========" -ForegroundColor Magenta
-    Write-Host "[ 1] Verificar atualizações do Windows"
-    Write-Host "[ 2] Instalar atualizações do Windows"
+    Write-Host "========== MENU DE MANUTENCAO ==========" -ForegroundColor Magenta
+    Write-Host "[ 1] Verificar atualizacoes do Windows"
+    Write-Host "[ 2] Instalar atualizacoes do Windows"
     Write-Host "[ 3] Winget: Atualizar aplicativos"
     Write-Host "[ 4] Winget: Desinstalar aplicativos"
     Write-Host "[ 5] Chocolatey: Instalar/Verificar"
@@ -507,11 +571,11 @@ function Mostrar-Menu {
     Write-Host "[ 7] Chocolatey: Atualizar tudo"
     Write-Host "[ 8] Chocolatey: Desinstalar pacote"
     Write-Host "[ 9] Mapear/Desmapear unidade de rede"
-    Write-Host "[10] Limpeza de temporários"
-    Write-Host "[11] Remover perfis de usuário"
+    Write-Host "[10] Limpeza de temporarios"
+    Write-Host "[11] Remover perfis de usuario"
     Write-Host "[12] Debloat do Windows (Sycnex)"
     Write-Host "[13] Backup com Robocopy"
-    Write-Host "[14] Exclusão forçada de pasta"
+    Write-Host "[14] Exclusao forcada de pasta"
     Write-Host "[ S] Sair  |  [Q] Quit  |  [0] Zero para sair"
     Write-Host "=========================================" -ForegroundColor Magenta
 }
@@ -538,7 +602,7 @@ function Loop-Menu {
             'S' { return }
             'Q' { return }
             '0' { return }
-            default { Write-Warn "Opção inválida."; Start-Sleep -Milliseconds 900 }
+            default { Write-Warn "Opcao invalida."; Start-Sleep -Milliseconds 900 }
         }
     } while ($true)
 }

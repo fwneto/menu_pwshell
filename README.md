@@ -31,7 +31,7 @@ O script `menu.ps1` oferece um menu interativo com 14 rotinas de manutenção pa
 | 3 | Atualiza todos os aplicativos disponíveis via winget com parâmetros silenciosos.​:codex-file-citation[codex-file-citation]{line_range_start=138 line_range_end=147 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L138-L147"}​ |
 | 4 | Lista os pacotes winget instalados, permite selecionar múltiplos itens por índice e executa a desinstalação silenciosa.​:codex-file-citation[codex-file-citation]{line_range_start=150 line_range_end=199 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L150-L199"}​ |
 | 5 | Executa `choco outdated` para inspecionar pacotes desatualizados.​:codex-file-citation[codex-file-citation]{line_range_start=202 line_range_end=205 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L202-L205"}​ |
-| 6 | Instala em lote uma lista de aplicativos essenciais pelo Chocolatey (7zip, Google Chrome, VS Code, etc.).​:codex-file-citation[codex-file-citation]{line_range_start=208 line_range_end=223 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L208-L223"}​ |
+| 6 | Permite selecionar por índice quais pacotes Chocolatey instalar (7zip, Google Chrome, VLC, DotNet 8 Runtime, etc.). |
 | 7 | Atualiza todos os pacotes Chocolatey instalados de uma só vez.​:codex-file-citation[codex-file-citation]{line_range_start=226 line_range_end=236 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L226-L236"}​ |
 | 8 | Lista pacotes Chocolatey locais, permite selecionar múltiplos por índice e realiza a desinstalação com remoção de dependências.​:codex-file-citation[codex-file-citation]{line_range_start=239 line_range_end=314 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L239-L314"}​ |
 | 9 | Mapeia ou desmapeia unidades de rede, com suporte opcional a credenciais customizadas.​:codex-file-citation[codex-file-citation]{line_range_start=316 line_range_end=348 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L316-L348"}​ |
@@ -48,7 +48,7 @@ O script `menu.ps1` oferece um menu interativo com 14 rotinas de manutenção pa
 
 ## Personalização
 
-- Ajuste a lista de aplicativos instalados via Chocolatey editando o array `$lista` na função `Acao-6-ChocoInstalarProgramas`.​:codex-file-citation[codex-file-citation]{line_range_start=208 line_range_end=213 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L208-L213"}​
+- Ajuste a lista padrão editando o array `$pacotesDesejados` e, se necessário, adapte o fluxo de seleção na função `Acao-6-ChocoInstalarProgramas`.
 - Adapte ou adicione novas rotinas seguindo o padrão das funções `Acao-XX` e vinculando-as no `switch` do menu principal.​:codex-file-citation[codex-file-citation]{line_range_start=138 line_range_end=314 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L138-L314"}​​:codex-file-citation[codex-file-citation]{line_range_start=460 line_range_end=478 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L460-L478"}​
 
 ## Avisos importantes

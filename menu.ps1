@@ -38,6 +38,36 @@ function Pause-Enter {
     Read-Host "Pressione ENTER para continuar" | Out-Null
 }
 
+function Clear-DirectoryContents {
+    param(
+        [Parameter(Mandatory)][string]$Path,
+        [string]$DisplayName
+    )
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+
+    $label = if ($DisplayName) { $DisplayName } else { $Path }
+    Write-Info ("Limpando: {0}" -f $label)
+
+    try {
+        Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue | ForEach-Object {
+            try {
+                if ($_.PSIsContainer) {
+                    Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
+                } else {
+                    Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue
+                }
+            } catch {
+                Write-Warn ("Nao foi possivel remover {0}: {1}" -f $_.FullName, $_.Exception.Message)
+            }
+        }
+    } catch {
+        Write-Warn ("Falha ao enumerar {0}: {1}" -f $label, $_.Exception.Message)
+    }
+}
+
 # Elevacao para administrador
 function Ensure-Admin {
     $id = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -96,6 +126,163 @@ function Ensure-Choco {
     }
 }
 
+function Ensure-PSWindowsUpdate {
+    try {
+        Import-Module PSWindowsUpdate -ErrorAction Stop
+        return $true
+    } catch {
+        Write-Warn "Modulo PSWindowsUpdate nao encontrado. Tentando instalar..."
+        try {
+            Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -ErrorAction SilentlyContinue | Out-Null
+        } catch {
+            Write-Warn ("Falha ao preparar NuGet provider: {0}" -f $_.Exception.Message)
+        }
+        try {
+            Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
+        } catch {
+            Write-Warn ("Nao foi possivel ajustar PSGallery: {0}" -f $_.Exception.Message)
+        }
+        $installed = $false
+        try {
+            Install-Module -Name PSWindowsUpdate -Force -Scope AllUsers -AllowClobber -ErrorAction Stop
+            $installed = $true
+        } catch {
+            Write-Warn ("Falha na instalacao global de PSWindowsUpdate: {0}" -f $_.Exception.Message)
+        }
+        if (-not $installed) {
+            try {
+                Install-Module -Name PSWindowsUpdate -Force -Scope CurrentUser -AllowClobber -ErrorAction Stop
+                $installed = $true
+            } catch {
+                Write-Err ("Falha ao instalar PSWindowsUpdate: {0}" -f $_.Exception.Message)
+                return $false
+            }
+        }
+        try {
+            Import-Module PSWindowsUpdate -ErrorAction Stop
+            Write-Ok "Modulo PSWindowsUpdate disponivel."
+            return $true
+        } catch {
+            Write-Err ("Falha ao carregar PSWindowsUpdate: {0}" -f $_.Exception.Message)
+            return $false
+        }
+    }
+}
+
+# Helper para converter a saida do winget list em objetos padronizados
+function Convert-WingetListOutput {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)][string]$RawText
+    )
+
+    $normalized = @()
+    $trimmed = $RawText.Trim()
+    if (-not $trimmed) { return $normalized }
+
+    if ($trimmed.StartsWith('{') -or $trimmed.StartsWith('[')) {
+        try {
+            $parsed = $trimmed | ConvertFrom-Json -ErrorAction Stop
+
+            $packages = @()
+            if ($parsed.Sources) {
+                foreach ($src in $parsed.Sources) {
+                    if ($src.Packages) { $packages += $src.Packages }
+                }
+            } elseif ($parsed.Packages) {
+                $packages = $parsed.Packages
+            } elseif ($parsed -is [System.Collections.IEnumerable]) {
+                $packages = $parsed
+            }
+
+            foreach ($pkg in $packages) {
+                $pkgId = $null
+                if ($pkg.Id) { $pkgId = [string]$pkg.Id }
+                elseif ($pkg.PackageIdentifier) { $pkgId = [string]$pkg.PackageIdentifier }
+                elseif ($pkg.PackageId) { $pkgId = [string]$pkg.PackageId }
+
+                $pkgName = $null
+                if ($pkg.Name) { $pkgName = [string]$pkg.Name }
+                elseif ($pkg.PackageName) { $pkgName = [string]$pkg.PackageName }
+
+                if (-not $pkgId -or -not $pkgName) { continue }
+
+                $pkgVersion = $null
+                if ($pkg.Version) { $pkgVersion = [string]$pkg.Version }
+                elseif ($pkg.InstalledVersion) { $pkgVersion = [string]$pkg.InstalledVersion }
+
+                $pkgAvailable = $null
+                if ($pkg.AvailableVersion) { $pkgAvailable = [string]$pkg.AvailableVersion }
+                elseif ($pkg.Available) { $pkgAvailable = [string]$pkg.Available }
+
+                $pkgSource = $null
+                if ($pkg.Source) { $pkgSource = [string]$pkg.Source }
+
+                $normalized += [PSCustomObject]@{
+                    Name      = $pkgName
+                    Id        = $pkgId
+                    Version   = $pkgVersion
+                    Available = $pkgAvailable
+                    Source    = $pkgSource
+                }
+            }
+
+            if ($normalized) { return $normalized }
+        } catch {
+            # Ignora erro e tenta analisar como tabela
+        }
+    }
+
+    $lines = $RawText -split "`r?`n"
+    if (-not $lines) { return $normalized }
+
+    $dividerIndex = $null
+    for ($i = 0; $i -lt $lines.Length; $i++) {
+        if ($lines[$i] -match '^\s*-{3,}\s*$') {
+            $dividerIndex = $i
+            break
+        }
+    }
+
+    if ($null -eq $dividerIndex) { return $normalized }
+
+    $headerIndex = $dividerIndex - 1
+    if ($headerIndex -lt 0) { return $normalized }
+
+    $headerLine = $lines[$headerIndex]
+    if ($headerLine -notmatch '(Name|Nome)\s{2,}Id') { return $normalized }
+
+    $start = $dividerIndex + 1
+
+    for ($j = $start; $j -lt $lines.Length; $j++) {
+        $line = $lines[$j].TrimEnd()
+        if ([string]::IsNullOrWhiteSpace($line)) { continue }
+        if ($line -match '^\s*-{3,}\s*$') { continue }
+        if ($line -match '^(Name|Nome)\s{2,}') { continue }
+
+        $parts = $line -split '\s{2,}'
+        if ($parts.Count -lt 2) { continue }
+
+        $name = $parts[0].Trim()
+        $id   = $parts[1].Trim()
+        if (-not $id) { continue }
+
+        $version   = if ($parts.Count -ge 3) { $parts[2].Trim() } else { $null }
+        $available = if ($parts.Count -ge 4) { $parts[3].Trim() } else { $null }
+        $source    = if ($parts.Count -ge 5) { $parts[4].Trim() } else { $null }
+
+        $normalized += [PSCustomObject]@{
+            Name      = $name
+            Id        = $id
+            Version   = $version
+            Available = $available
+            Source    = $source
+        }
+    }
+
+    return $normalized
+}
+
 #endregion
 
 #region Acoes
@@ -105,15 +292,14 @@ function Acao-1-VerificarWindowsUpdates {
     try {
         Get-WindowsUpdate -AcceptAll -IgnoreReboot -WhatIf
     } catch {
-        Write-Warn "Modulo PSWindowsUpdate nao encontrado. Instalando..."
-        try {
-            Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -ErrorAction SilentlyContinue | Out-Null
-            Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-            Install-Module PSWindowsUpdate -Force -Scope AllUsers
-            Import-Module PSWindowsUpdate
-            Get-WindowsUpdate -AcceptAll -IgnoreReboot -WhatIf
-        } catch {
-            Write-Err "Erro ao preparar/verificar Windows Update: $($_.Exception.Message)"
+        if (Ensure-PSWindowsUpdate) {
+            try {
+                Get-WindowsUpdate -AcceptAll -IgnoreReboot -WhatIf
+            } catch {
+                Write-Err "Erro ao verificar Windows Update: $($_.Exception.Message)"
+            }
+        } else {
+            Write-Err "Nao foi possivel garantir o modulo PSWindowsUpdate."
         }
     }
     Pause-Enter
@@ -124,15 +310,14 @@ function Acao-2-InstalarWindowsUpdates {
     try {
         Get-WindowsUpdate -AcceptAll -IgnoreReboot -Install
     } catch {
-        Write-Warn "Modulo PSWindowsUpdate nao encontrado. Instalando..."
-        try {
-            Install-PackageProvider -Name NuGet -Force -Scope CurrentUser -ErrorAction SilentlyContinue | Out-Null
-            Set-PSRepository -Name 'PSGallery' -InstallationPolicy Trusted -ErrorAction SilentlyContinue
-            Install-Module PSWindowsUpdate -Force -Scope AllUsers
-            Import-Module PSWindowsUpdate
-            Get-WindowsUpdate -AcceptAll -IgnoreReboot -Install
-        } catch {
-            Write-Err "Erro ao instalar atualizacoes: $($_.Exception.Message)"
+        if (Ensure-PSWindowsUpdate) {
+            try {
+                Get-WindowsUpdate -AcceptAll -IgnoreReboot -Install
+            } catch {
+                Write-Err "Erro ao instalar atualizacoes: $($_.Exception.Message)"
+            }
+        } else {
+            Write-Err "Nao foi possivel garantir o modulo PSWindowsUpdate."
         }
     }
     Pause-Enter
@@ -142,8 +327,15 @@ function Acao-3-WingetUpgrade {
     if (-not (Ensure-Winget)) { Pause-Enter; return }
     Write-Info "Atualizando todos os aplicativos via winget..."
     try {
+        Set-Variable -Name LASTEXITCODE -Value 0 -Scope Global
         winget upgrade --all --silent --accept-source-agreements --accept-package-agreements
-        Write-Ok "Atualizacao concluida (winget)."
+        $exitCode = $LASTEXITCODE
+        if ($exitCode -eq 0) {
+            Write-Ok "Atualizacao concluida (winget)."
+        } else {
+            $hexCode = "0x{0:X8}" -f (([int64]$exitCode) -band 0xFFFFFFFF)
+            Write-Err ("winget retornou codigo {0} ({1}). Verifique os detalhes acima." -f $exitCode, $hexCode)
+        }
     } catch {
         Write-Err "Falha no winget upgrade: $($_.Exception.Message)"
     }
@@ -154,52 +346,86 @@ function Acao-4-WingetUninstall {
     if (-not (Ensure-Winget)) { Pause-Enter; return }
     Write-Info "Listando pacotes winget instalados..."
     try {
-        $rawJson = winget list --accept-source-agreements --output json | Out-String
-        if (-not $rawJson.Trim()) { Write-Warn "Nenhum app encontrado."; Pause-Enter; return }
-
-        try {
-            $parsed = $rawJson | ConvertFrom-Json
-        } catch {
-            Write-Err "Nao foi possivel interpretar a saida do winget."; Pause-Enter; return
-        }
-
-        $packages = @()
-        if ($parsed.Sources) {
-            foreach ($src in $parsed.Sources) {
-                if ($src.Packages) { $packages += $src.Packages }
+        $wingetHelpMarkers = @(
+            '--help',
+            'Mostra a ajuda',
+            'Uso:',
+            'Usage:',
+            'Comandos dispon',
+            'Commandos dispon',
+            'Comando selecionado',
+            'Sintaxe'
+        )
+        $isWingetHelpOutput = {
+            param([string]$text)
+            if (-not $text) { return $false }
+            foreach ($marker in $wingetHelpMarkers) {
+                if ($text.IndexOf($marker, [System.StringComparison]::OrdinalIgnoreCase) -ge 0) {
+                    return $true
+                }
             }
-        } elseif ($parsed.Packages) {
-            $packages = $parsed.Packages
-        } elseif ($parsed -is [System.Collections.IEnumerable]) {
-            $packages = $parsed
+            return $false
         }
 
-        $normalized = @()
-        foreach ($pkg in $packages) {
-            $pkgId = $null
-            if ($pkg.Id) { $pkgId = [string]$pkg.Id }
-            elseif ($pkg.PackageIdentifier) { $pkgId = [string]$pkg.PackageIdentifier }
-            elseif ($pkg.PackageId) { $pkgId = [string]$pkg.PackageId }
+        $attempts = @(
+            @('--accept-source-agreements','--include-unknown','--disable-interactivity'),
+            @('--accept-source-agreements','--disable-interactivity'),
+            @('--disable-interactivity'),
+            @('--accept-source-agreements'),
+            @()
+        )
 
-            $pkgName = $null
-            if ($pkg.Name) { $pkgName = [string]$pkg.Name }
-            elseif ($pkg.PackageName) { $pkgName = [string]$pkg.PackageName }
+        $rawOutput   = $null
+        $successful  = $false
+        $lastSnippet = $null
 
-            $pkgVersion = $null
-            if ($pkg.Version) { $pkgVersion = [string]$pkg.Version }
-            elseif ($pkg.InstalledVersion) { $pkgVersion = [string]$pkg.InstalledVersion }
+        foreach ($args in $attempts) {
+            try {
+                $rawOutput = winget list @args 2>&1 | Out-String
+            } catch {
+                $rawOutput = $_.Exception.Message
+            }
 
-            if (-not $pkgId -or -not $pkgName) { continue }
+            if (-not $rawOutput -or -not $rawOutput.Trim()) {
+                continue
+            }
 
-            $normalized += [PSCustomObject]@{
-                Id      = $pkgId
-                Name    = $pkgName
-                Version = $pkgVersion
-                Source  = $pkg.Source
+            $exitCode = $LASTEXITCODE
+            $snippet  = $rawOutput.Substring(0, [Math]::Min(200, $rawOutput.Length)).Trim()
+            $lastSnippet = $snippet
+            $looksLikeHelp = & $isWingetHelpOutput $rawOutput
+
+            if ($exitCode -eq 0 -and -not $looksLikeHelp) {
+                $successful = $true
+                break
             }
         }
 
-        if (-not $normalized) { Write-Warn "Nenhum app encontrado."; Pause-Enter; return }
+        if (-not $successful) {
+            Write-Err "Nao foi possivel obter a lista de pacotes via winget."
+            if ($lastSnippet) {
+                Write-Info ("Saida capturada: {0}" -f $lastSnippet)
+            }
+            Pause-Enter
+            return
+        }
+
+        $normalized = Convert-WingetListOutput -RawText $rawOutput
+        $normalized = $normalized | Where-Object {
+            $_.Id -and $_.Name -and
+            $_.Id -notmatch '^[\-/]' -and
+            $_.Name -notmatch 'Mostra a ajuda' -and
+            $_.Name -ne '-'
+        }
+        if (-not $normalized) {
+            if ($rawOutput -match 'Nenhum.*pacote' -or $rawOutput -match 'No (installed )?packages? (were )?found') {
+                Write-Info "Nenhum pacote instalado foi encontrado pelo winget."
+            } else {
+                Write-Err "Nao foi possivel interpretar a lista retornada pelo winget."
+                Write-Info "Verifique se a versao do winget suporta os parametros utilizados."
+            }
+            Pause-Enter; return
+        }
 
         $list = @()
         $i = 1
@@ -246,8 +472,96 @@ function Acao-4-WingetUninstall {
 
         foreach ($id in $targets) {
             try {
-                winget uninstall --id "$id" --exact --silent --accept-source-agreements --accept-package-agreements
-                Write-Ok "Desinstalado (winget): $id"
+                $uninstallAttempts = @(
+                    @('--id', $id, '--exact', '--silent', '--accept-source-agreements', '--accept-package-agreements'),
+                    @('--id', $id, '--exact', '--silent', '--accept-source-agreements'),
+                    @('--id', $id, '--exact', '--silent'),
+                    @('--id', $id, '--exact'),
+                    @('--id', $id, '--exact', '--interactive')
+                )
+
+                $interactiveIndex = -1
+                for ($idx = 0; $idx -lt $uninstallAttempts.Count; $idx++) {
+                    if ($uninstallAttempts[$idx] -contains '--interactive') {
+                        $interactiveIndex = $idx
+                        break
+                    }
+                }
+
+                $removed    = $false
+                $lastOutput = $null
+                $lastExit   = $null
+                $attemptIndex = 0
+
+                while ($attemptIndex -lt $uninstallAttempts.Count) {
+                    $args = $uninstallAttempts[$attemptIndex]
+                    try {
+                        $lastOutput = winget uninstall @args 2>&1 | Out-String
+                    } catch {
+                        $lastOutput = $_.Exception.Message
+                    }
+
+                    $lastExit = $LASTEXITCODE
+                    $looksLikeHelp = & $isWingetHelpOutput $lastOutput
+
+                    if ($lastExit -eq 0 -and -not $looksLikeHelp) {
+                        $removed = $true
+                        break
+                    }
+
+                    $argumentError = $lastOutput -match 'argumento n.o foi reconhecido' -or $lastOutput -match 'argument name was not recognized'
+                    if ($argumentError) {
+                        # Tenta sem o argumento desconhecido
+                        $attemptIndex++
+                        continue
+                    }
+
+                    $lastExitUInt = $null
+                    if ($null -ne $lastExit) {
+                        $lastExitUInt = ([int64]$lastExit) -band 0xFFFFFFFF
+                    }
+
+                    $isCancelled = ($lastExit -eq 1223 -or $lastExitUInt -eq 0x800704C7)
+                    if ($isCancelled -and $interactiveIndex -ge 0 -and $attemptIndex -lt $interactiveIndex) {
+                        $attemptIndex = $interactiveIndex
+                        continue
+                    }
+
+                    # Para demais retornos, avanca para o conjunto seguinte de argumentos
+                    $attemptIndex++
+                    continue
+                }
+
+                if ($removed) {
+                    Write-Ok "Desinstalado (winget): $id"
+                } else {
+                    $details = @()
+                    if ($null -ne $lastExit) {
+                        $hex = "0x{0:X8}" -f (([int64]$lastExit) -band 0xFFFFFFFF)
+                        $details += ("winget retornou codigo {0} ({1})" -f $lastExit, $hex)
+                    }
+                    if ($lastOutput) {
+                        $cleanLines = $lastOutput -split "`r?`n" | ForEach-Object { $_.TrimEnd() } | Where-Object {
+                            $trim = $_.Trim()
+                            if (-not $trim) { return $false }
+                            return $trim -notin '-', '\', '|', '/'
+                        }
+                        if ($cleanLines) {
+                            $details += ($cleanLines -join "`n")
+                        }
+                    }
+                    if (-not $details) {
+                        $details = @("winget nao forneceu detalhes adicionais.")
+                    }
+                    Write-Err ("Falha ao desinstalar {0}. Ultima tentativa retornou:`n{1}" -f $id, ($details -join "`n"))
+                    $lastExitUInt = $null
+                    if ($null -ne $lastExit) {
+                        $lastExitUInt = ([int64]$lastExit) -band 0xFFFFFFFF
+                    }
+                    if ($lastExit -eq 1223 -or ($lastExitUInt -eq 0x800704C7)) {
+                        Write-Warn "O desinstalador abortou a operacao (ERROR_CANCELLED). Execute novamente esta opcao e responda aos prompts do desinstalador ou utilize o aplicativo original para remover o pacote."
+                    }
+                }
             } catch {
                 Write-Err "Falha ao desinstalar ${id}: $($_.Exception.Message)"
             }
@@ -472,45 +786,158 @@ function Acao-9-MapearDesmapearUnidade {
 }
 
 function Acao-10-LimpezaTemporarios {
-    Write-Info "Limpando arquivos temporarios do Windows e usuario..."
+    Write-Info "Limpando arquivos temporarios do Windows, usuarios e navegadores..."
     try {
         $paths = @(
-            $env:TEMP, $env:TMP,
-            "$env:WINDIR\Temp",
-            "$env:SystemRoot\SoftwareDistribution\Download"
+            $env:TEMP
+            $env:TMP
+            (Join-Path -Path $env:WINDIR -ChildPath 'Temp')
+            (Join-Path -Path $env:SystemRoot -ChildPath 'Prefetch')
+            (Join-Path -Path $env:SystemRoot -ChildPath 'SoftwareDistribution\Download')
         )
+
         foreach ($p in $paths) {
-            if (Test-Path $p) {
-                Write-Info "Limpando: $p"
-                Get-ChildItem -Path $p -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
+            Clear-DirectoryContents -Path $p
+        }
+
+        $usersRoot = 'C:\Users'
+        if (Test-Path -LiteralPath $usersRoot) {
+            $excluded = @('Public','Default','Default User','All Users')
+            Get-ChildItem -Path $usersRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $excluded -notcontains $_.Name } | ForEach-Object {
+                $userDir = $_
+                Write-Info ("Processando perfil: {0}" -f $userDir.Name)
+
+                $userTempTargets = @(
+                    (Join-Path -Path $userDir.FullName -ChildPath 'AppData\Local\Temp')
+                    (Join-Path -Path $userDir.FullName -ChildPath 'AppData\Local\Microsoft\Windows\INetCache')
+                    (Join-Path -Path $userDir.FullName -ChildPath 'AppData\LocalLow\Microsoft\CryptnetUrlCache')
+                )
+
+                foreach ($target in $userTempTargets) {
+                    Clear-DirectoryContents -Path $target
+                }
+
+                $browserPatterns = @(
+                    'AppData\Local\Google\Chrome\User Data\*\Cache',
+                    'AppData\Local\Google\Chrome\User Data\*\Code Cache',
+                    'AppData\Local\Google\Chrome\User Data\*\GPUCache',
+                    'AppData\Local\Google\Chrome\User Data\*\Service Worker\CacheStorage',
+                    'AppData\Local\Microsoft\Edge\User Data\*\Cache',
+                    'AppData\Local\Microsoft\Edge\User Data\*\Code Cache',
+                    'AppData\Local\Microsoft\Edge\User Data\*\GPUCache',
+                    'AppData\Local\Microsoft\Edge\User Data\*\Service Worker\CacheStorage',
+                    'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Cache',
+                    'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Code Cache',
+                    'AppData\Local\Opera Software\Opera Stable\Cache',
+                    'AppData\Local\Mozilla\Firefox\Profiles\*\cache2',
+                    'AppData\Local\Mozilla\Firefox\Profiles\*\startupCache'
+                )
+
+                foreach ($pattern in $browserPatterns) {
+                    $patternPath = Join-Path $userDir.FullName $pattern
+                    Get-Item -Path $patternPath -ErrorAction SilentlyContinue | ForEach-Object {
+                        Clear-DirectoryContents -Path $_.FullName
+                    }
+                }
             }
         }
+
         Write-Ok "Limpeza concluida."
     } catch {
         Write-Err "Erro na limpeza: $($_.Exception.Message)"
     }
+
     Pause-Enter
 }
 
 function Acao-11-RemoverPerfisUsuario {
-    $confirm = Read-Host "ATENCAO: isto remove perfis de usuario (pastas em C:\Users) que nao estejam em uso. Confirmar? [s/N]"
-    if ($confirm.Trim().ToUpper() -ne 'S') { return }
+    Write-Warn "ATENCAO: esta rotina remove perfis de usuario (pastas em C:\Users) que nao estejam carregados."
     try {
-        $inUse = (Get-WmiObject -Class Win32_ComputerSystem).UserName
-        Get-CimInstance -ClassName Win32_UserProfile | Where-Object { -not $_.Loaded -and -not $_.Special } | ForEach-Object {
-            $p = $_.LocalPath
-            if ($p -and $p -ne $env:USERPROFILE) {
-                try {
-                    Remove-CimInstance -InputObject $_
-                    Write-Ok "Perfil removido: $p"
-                } catch {
-                    Write-Err "Falha ao remover ${p}: $($_.Exception.Message)"
-                }
-            }
+        $rawProfiles = Get-CimInstance -ClassName Win32_UserProfile -ErrorAction Stop | Where-Object {
+            -not $_.Loaded -and -not $_.Special -and $_.LocalPath -and (Test-Path -LiteralPath $_.LocalPath)
         }
     } catch {
-        Write-Err "Erro ao enumerar/remover perfis: $($_.Exception.Message)"
+        Write-Err ("Erro ao consultar perfis: {0}" -f $_.Exception.Message)
+        Pause-Enter
+        return
     }
+
+    $currentProfile = $env:USERPROFILE
+    $excluir = @('Default','Default User','All Users','Public')
+    $candidatos = @()
+    $index = 1
+
+    foreach ($profile in $rawProfiles | Sort-Object -Property LocalPath) {
+        $path = $profile.LocalPath
+        if ([string]::IsNullOrWhiteSpace($path)) { continue }
+        if ($currentProfile -and ($path.TrimEnd('\') -ieq $currentProfile.TrimEnd('\'))) { continue }
+        $nome = Split-Path -Path $path -Leaf
+        if ($excluir -contains $nome) { continue }
+
+        $candidatos += [PSCustomObject]@{
+            Index   = $index
+            Path    = $path
+            Name    = $nome
+            Profile = $profile
+        }
+        $index++
+    }
+
+    if (-not $candidatos) {
+        Write-Info "Nenhum perfil elegivel encontrado."
+        Pause-Enter
+        return
+    }
+
+    Write-Host "`nPerfis disponiveis para remocao:" -ForegroundColor Cyan
+    foreach ($item in $candidatos) {
+        Write-Host ("[{0,2}] {1}" -f $item.Index, $item.Path)
+    }
+
+    $entrada = Read-Host "`nInforme os numeros dos perfis para remover (separados por espaco ou virgula). ENTER para cancelar"
+    if ([string]::IsNullOrWhiteSpace($entrada)) {
+        Write-Info "Nenhum perfil selecionado."
+        Pause-Enter
+        return
+    }
+
+    $indices = $entrada -split '[,; ]+' | Where-Object { $_ -match '^\d+$' } | ForEach-Object { [int]$_ } | Sort-Object -Unique
+    if (-not $indices) {
+        Write-Warn "Nenhum numero valido informado."
+        Pause-Enter
+        return
+    }
+
+    $validos = $indices | Where-Object { $_ -ge 1 -and $_ -le $candidatos.Count }
+    if (-not $validos) {
+        Write-Warn "Nenhum numero dentro do intervalo foi informado."
+        Pause-Enter
+        return
+    }
+
+    $selecionados = foreach ($idx in $validos) {
+        $candidatos | Where-Object { $_.Index -eq $idx }
+    }
+
+    Write-Host "`nPerfis selecionados para remocao:" -ForegroundColor Yellow
+    $selecionados | ForEach-Object { Write-Host (" - {0}" -f $_.Path) }
+
+    $confirm = Read-Host "`nConfirmar exclusao? [s/N]"
+    if ($confirm.Trim().ToUpper() -ne 'S') {
+        Write-Info "Operacao cancelada."
+        Pause-Enter
+        return
+    }
+
+    foreach ($item in $selecionados) {
+        try {
+            Remove-CimInstance -InputObject $item.Profile -ErrorAction Stop
+            Write-Ok ("Perfil removido: {0}" -f $item.Path)
+        } catch {
+            Write-Err ("Falha ao remover {0}: {1}" -f $item.Path, $_.Exception.Message)
+        }
+    }
+
     Pause-Enter
 }
 
@@ -557,7 +984,77 @@ function Acao-14-ExclusaoForcadaPasta {
 
 #endregion
 
+function Acao-0-InstalarDependencias {
+    Write-Info "Verificando dependencias principais (winget, Chocolatey, PSWindowsUpdate)..."
+
+    $wingetOk = $false
+    try {
+        $wingetOk = Ensure-Winget
+    } catch {
+        Write-Err ("Falha ao verificar winget: {0}" -f $_.Exception.Message)
+    }
+    if ($wingetOk) {
+        Write-Ok "Winget disponivel."
+    } else {
+        Write-Warn "Winget ausente. Instale o App Installer (Microsoft Store) manualmente caso necessario."
+    }
+
+    $chocoOk = $false
+    try {
+        $chocoOk = Ensure-Choco
+    } catch {
+        Write-Err ("Falha ao verificar Chocolatey: {0}" -f $_.Exception.Message)
+    }
+    if ($chocoOk) {
+        Write-Ok "Chocolatey disponivel."
+    } else {
+        Write-Err "Chocolatey nao foi instalado automaticamente. Verifique a conexao ou tente novamente."
+    }
+
+    $pswuOk = $false
+    try {
+        $pswuOk = Ensure-PSWindowsUpdate
+    } catch {
+        Write-Err ("Falha ao preparar PSWindowsUpdate: {0}" -f $_.Exception.Message)
+    }
+    if ($pswuOk) {
+        Write-Ok "PSWindowsUpdate pronto para uso."
+    } else {
+        Write-Err "Modulo PSWindowsUpdate indisponivel. Reexecute esta rotina apos corrigir o erro."
+    }
+}
+
 #region Menu
+
+function Mostrar-SetupInicial {
+    Clear-Host
+    Write-Host "====== PREPARACAO INICIAL ======" -ForegroundColor Magenta
+    Write-Host "[ 1] Verificar/instalar dependencias"
+    Write-Host "[ 2] Prosseguir para o menu principal"
+    Write-Host "[ 0] Sair"
+    Write-Host "================================" -ForegroundColor Magenta
+}
+
+function Loop-SetupInicial {
+    while ($true) {
+        Mostrar-SetupInicial
+        $escolha = Read-Host "Escolha"
+        switch ($escolha.Trim().ToUpper()) {
+            '1' {
+                Acao-0-InstalarDependencias
+                Pause-Enter
+            }
+            '2' { return }
+            '0' { exit }
+            'S' { exit }
+            'Q' { exit }
+            default {
+                Write-Warn "Opcao invalida."
+                Start-Sleep -Milliseconds 900
+            }
+        }
+    }
+}
 
 function Mostrar-Menu {
     Clear-Host
@@ -608,6 +1105,8 @@ function Loop-Menu {
 }
 
 #endregion
+
+Loop-SetupInicial
 
 try {
     Loop-Menu

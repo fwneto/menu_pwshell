@@ -1,7 +1,7 @@
 [Setup]
 AppName=Menu de Manutencao do Windows
 AppVersion=1.0.0
-DefaultDirName={sd}\Dev\ManutencaoWindows
+DefaultDirName={sd}\Dev\
 DefaultGroupName=Menu de Manutencao do Windows
 DisableDirPage=yes
 DisableProgramGroupPage=yes

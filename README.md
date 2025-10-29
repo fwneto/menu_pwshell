@@ -1,9 +1,13 @@
-# Menu de Manutenção do Windows (PowerShell)
+# Menu de Manutenção do Windows
 
-O script `menu.ps1` oferece um menu interativo com 14 rotinas de manutenção para ambientes Windows, centralizando atividades recorrentes de suporte em um único painel executado via PowerShell.​:codex-file-citation[codex-file-citation]{line_range_start=439 line_range_end=485 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L439-L485"}​
+Ferramenta em PowerShell que centraliza 14 rotinas de suporte em um menu interativo, cobrindo atualização de softwares, limpeza, automações de rede e tarefas de pós-atendimento.
 
-## Visão geral
+## Componentes principais
+- `menu.ps1`: script autônomo que garante privilégios administrativos, prepara `C:\ProgramData\ManutencaoWindows\{Logs,Temp}` e grava transcript/log de cada execução.
+- `menu.psm1`: módulo reutilizável com `Set-StrictMode`, leitura opcional de `menu.config.json`, logging local em `.\logs\` e exportação das mesmas rotinas para uso programático (`Start-MaintenanceMenu`, `Invoke-MaintenanceMenuLoop`, `Show-MaintenanceMenu`).
+- `menu.config.json`: define pacotes padrão do Chocolatey e switches de robocopy para o módulo (pode ser customizado por ambiente).
 
+<<<<<<< HEAD
 - Requer PowerShell 5.1 ou superior, ajusta a codificação da sessão e cria automaticamente a estrutura `C:\ProgramData\ManutencaoWindows\{Logs,Temp}` para armazenar temporários e transcripts datados de cada execução.​:codex-file-citation[codex-file-citation]{line_range_start=1 line_range_end=26 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L1-L26"}​
 - Garante que a execução ocorra com privilégios de administrador, relançando o script elevado caso necessário.​:codex-file-citation[codex-file-citation]{line_range_start=38 line_range_end=57 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L38-L57"}​
 - Disponibiliza utilitários auxiliares para validar o `winget` e o Chocolatey, incluindo a instalação automática do Chocolatey quando estiver ausente.​:codex-file-citation[codex-file-citation]{line_range_start=64 line_range_end=94 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L64-L94"}​
@@ -58,14 +62,49 @@ Para facilitar a distribuição, o repositório inclui um script do Inno Setup q
 | 12 | Baixa e executa o Windows10Debloater (Sycnex) para remover *bloatware* do sistema.​:codex-file-citation[codex-file-citation]{line_range_start=394 line_range_end=405 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L394-L405"}​ |
 | 13 | Realiza backup espelhado com `robocopy`, registrando o resultado em log dedicado.​:codex-file-citation[codex-file-citation]{line_range_start=407 line_range_end=418 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L407-L418"}​ |
 | 14 | Força a exclusão de pastas com `TAKEOWN`, `ICACLS` e `Remove-Item -Recurse -Force`. Use com cautela.​:codex-file-citation[codex-file-citation]{line_range_start=421 line_range_end=433 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L421-L433"}​ |
+=======
+## Pré-requisitos
+- Windows com PowerShell 5.1 ou superior.
+- Sessão elevada (o script relança com UAC quando necessário).
+- Acesso à internet para baixar módulos, pacotes winget/choco e o Windows10Debloater.
+- Winget e Chocolatey instalados; o script tenta instalar o Chocolatey automaticamente se não estiver presente.
+
+## Execução rápida
+1. Baixe ou clone o repositório na máquina de manutenção.
+2. Abra o PowerShell **como administrador**.
+3. Execute o menu clássico: `powershell -ExecutionPolicy Bypass -File .\menu.ps1`.
+4. (Opcional) Importe o módulo para reutilizar as funções: `Import-Module .\menu.psm1; Start-MaintenanceMenu`.
+
+## Opções do menu
+
+| Opção | Rotina | Descrição resumida |
+|-------|--------|--------------------|
+| 1 | Verificar atualizações do Windows | Lista atualizações com PSWindowsUpdate em modo *WhatIf*, instalando o módulo automaticamente se faltar. |
+| 2 | Instalar atualizações do Windows | Instala atualizações pendentes com PSWindowsUpdate, incluindo preparação do módulo quando necessário. |
+| 3 | Winget: Atualizar aplicativos | Executa `winget upgrade --all` com aceites silenciosos. |
+| 4 | Winget: Desinstalar aplicativos | Lista pacotes winget (JSON), permite múltipla seleção por índice e remove cada item silenciosamente após confirmação. |
+| 5 | Chocolatey: Instalar/Verificar | Chama `choco outdated` para inspecionar versões pendentes. |
+| 6 | Chocolatey: Instalar programas | Instala pacotes pré-selecionados do Chocolatey com suporte a múltiplos índices ou ao atalho “todos”. |
+| 7 | Chocolatey: Atualizar tudo | Executa `choco upgrade all -y --no-progress`. |
+| 8 | Chocolatey: Desinstalar pacote | Enumera pacotes locais, confirma seleção e remove dependências ao desinstalar. |
+| 9 | Mapear/Desmapear unidade | Mapeia ou remove unidades de rede, com suporte opcional a credenciais. |
+| 10 | Limpeza de temporários | Remove temporários do usuário, do sistema e o cache de download do Windows Update. |
+| 11 | Remover perfis de usuário | Exclui perfis inativos (`C:\Users`) após confirmação explícita. |
+| 12 | Debloat do Windows (Sycnex) | Baixa e executa o Windows10Debloater diretamente do GitHub. |
+| 13 | Backup com Robocopy | Executa `robocopy` em modo espelho, gravando log dedicado no diretório de logs. |
+| 14 | Exclusão forçada de pasta | Toma posse (TAKEOWN/ICACLS) e remove pastas recalcitrantes via `Remove-Item -Recurse -Force`. |
+>>>>>>> a71f3dc425a94a674faff7b38e323423dfc745f8
 
 ## Logs e auditoria
-
-- Cada execução gera um transcript `log_yyyyMMdd_HHmmss.txt` dentro de `C:\ProgramData\ManutencaoWindows\Logs`, facilitando auditoria e histórico de ações.​:codex-file-citation[codex-file-citation]{line_range_start=14 line_range_end=26 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L14-L26"}​
-- A rotina de backup cria arquivos `robocopy_yyyyMMdd_HHmmss.log` no mesmo diretório, permitindo revisar transferências anteriores.​:codex-file-citation[codex-file-citation]{line_range_start=407 line_range_end=414 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L407-L414"}​
+- O script grava transcripts numerados em `C:\ProgramData\ManutencaoWindows\Logs`.
+- O módulo armazena transcripts e arquivos `maintenance_*.log` em `.\logs\`, facilitando auditorias em repositórios versionados.
 
 ## Personalização
+- Ajuste a lista padrão editando o array `$pacotesDesejados` dentro de `menu.ps1`.
+- Alterne pacotes e opções padrão do módulo via `menu.config.json`.
+- Todas as funções `Acao-*` podem ser reutilizadas ou estendidas no módulo, mantendo o padrão de nomenclatura sequencial.
 
+<<<<<<< HEAD
 - Ajuste a lista padrão editando o array `$pacotesDesejados` e, se necessário, adapte o fluxo de seleção na função `Acao-6-ChocoInstalarProgramas`.​
 - Personalize o menu inicial caso novas dependências precisem ser verificadas automaticamente na função `Acao-0-InstalarDependencias`.​
 - Adapte ou adicione novas rotinas seguindo o padrão das funções `Acao-XX` e vinculando-as no `switch` do menu principal.​:codex-file-citation[codex-file-citation]{line_range_start=138 line_range_end=314 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L138-L314"}​​:codex-file-citation[codex-file-citation]{line_range_start=460 line_range_end=478 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L460-L478"}​
@@ -74,3 +113,8 @@ Para facilitar a distribuição, o repositório inclui um script do Inno Setup q
 
 - A exclusão de perfis de usuário e de pastas é destrutiva; confirme duas vezes antes de prosseguir nessas opções.​:codex-file-citation[codex-file-citation]{line_range_start=372 line_range_end=433 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L372-L433"}​
 - O Windows10Debloater altera componentes do sistema; avalie previamente em um ambiente de testes antes de aplicá-lo em produção.​:codex-file-citation[codex-file-citation]{line_range_start=394 line_range_end=405 path=menu.ps1 git_url="https://github.com/fwneto/menu_pwshell/blob/main/menu.ps1#L394-L405"}​
+=======
+## Cuidados
+- As rotinas de remoção de perfis (`11`) e exclusão forçada (`14`) são destrutivas; revise caminhos e confirme antes de prosseguir.
+- O Windows10Debloater altera componentes do sistema. Teste em ambiente controlado antes de aplicar em produção.
+>>>>>>> a71f3dc425a94a674faff7b38e323423dfc745f8

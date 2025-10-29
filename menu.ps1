@@ -67,31 +67,142 @@ function Prompt-YesNo {
 function Clear-DirectoryContents {
     param(
         [Parameter(Mandatory)][string]$Path,
-        [string]$DisplayName
+        [string]$DisplayName,
+        [System.Collections.Generic.List[object]]$Report,
+        [string]$Source
     )
 
     if (-not (Test-Path -LiteralPath $Path)) {
-        return
+        return 0
     }
 
     $label = if ($DisplayName) { $DisplayName } else { $Path }
+    $entrySource = if ([string]::IsNullOrWhiteSpace($Source)) { 'NaoInformado' } else { $Source }
     Write-Info ("Limpando: {0}" -f $label)
 
+    $totalFreed = 0L
+
     try {
-        Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue | ForEach-Object {
-            try {
-                if ($_.PSIsContainer) {
-                    Remove-Item -LiteralPath $_.FullName -Recurse -Force -ErrorAction SilentlyContinue
-                } else {
-                    Remove-Item -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue
+        $children = Get-ChildItem -LiteralPath $Path -Force -ErrorAction SilentlyContinue
+        foreach ($child in $children) {
+            if ($child.PSIsContainer) {
+                $files = @()
+                try {
+                    $files = Get-ChildItem -LiteralPath $child.FullName -Force -Recurse -File -ErrorAction SilentlyContinue
+                } catch {
+                    $files = @()
                 }
-            } catch {
-                Write-Warn ("Nao foi possivel remover {0}: {1}" -f $_.FullName, $_.Exception.Message)
+
+                $fileRecords = [System.Collections.Generic.List[object]]::new()
+                $dirSize = 0L
+                foreach ($file in $files) {
+                    $size = 0L
+                    try {
+                        $size = [int64]$file.Length
+                    } catch {
+                        $size = 0L
+                    }
+                    $dirSize += $size
+                    $fileRecords.Add([PSCustomObject]@{
+                        Caminho = $file.FullName
+                        Bytes   = $size
+                    })
+                }
+
+                try {
+                    Remove-Item -LiteralPath $child.FullName -Recurse -Force -ErrorAction Stop
+                    $timestamp = Get-Date
+                    $totalFreed += $dirSize
+
+                    if ($Report) {
+                        foreach ($record in $fileRecords) {
+                            $Report.Add([PSCustomObject]@{
+                                Timestamp = $timestamp
+                                Tipo      = 'Arquivo'
+                                Acao      = $entrySource
+                                Caminho   = $record.Caminho
+                                Bytes     = $record.Bytes
+                                Tamanho   = Format-Bytes $record.Bytes
+                            })
+                        }
+
+                        $summaryType = if ($fileRecords.Count -gt 0) { 'ResumoDiretorio' } else { 'DiretorioVazio' }
+                        $Report.Add([PSCustomObject]@{
+                            Timestamp = $timestamp
+                            Tipo      = $summaryType
+                            Acao      = $entrySource
+                            Caminho   = $child.FullName
+                            Bytes     = $dirSize
+                            Tamanho   = Format-Bytes $dirSize
+                        })
+                    }
+                } catch {
+                    Write-Warn ("Nao foi possivel remover {0}: {1}" -f $child.FullName, $_.Exception.Message)
+                }
+            } else {
+                $fileSize = 0L
+                try {
+                    $fileSize = [int64]$child.Length
+                } catch {
+                    $fileSize = 0L
+                }
+
+                try {
+                    Remove-Item -LiteralPath $child.FullName -Force -ErrorAction Stop
+                    $timestamp = Get-Date
+                    $totalFreed += $fileSize
+
+                    if ($Report) {
+                        $Report.Add([PSCustomObject]@{
+                            Timestamp = $timestamp
+                            Tipo      = 'Arquivo'
+                            Acao      = $entrySource
+                            Caminho   = $child.FullName
+                            Bytes     = $fileSize
+                            Tamanho   = Format-Bytes $fileSize
+                        })
+                    }
+                } catch {
+                    Write-Warn ("Nao foi possivel remover {0}: {1}" -f $child.FullName, $_.Exception.Message)
+                }
             }
         }
     } catch {
         Write-Warn ("Falha ao enumerar {0}: {1}" -f $label, $_.Exception.Message)
     }
+
+    return $totalFreed
+}
+
+function Format-Bytes {
+    param(
+        [long]$Bytes
+    )
+
+    $units = @('B','KB','MB','GB','TB','PB')
+    if ($Bytes -eq 0) {
+        return "0 B"
+    }
+
+    $value = [double][math]::Abs($Bytes)
+    $index = 0
+
+    while ($value -ge 1024 -and $index -lt ($units.Count - 1)) {
+        $value /= 1024
+        $index++
+    }
+
+    $formatted = if ($index -eq 0) {
+        "{0:N0} {1}" -f $value, $units[$index]
+    } else {
+        "{0:N2} {1}" -f $value, $units[$index]
+    }
+
+    if ($Bytes -lt 0) {
+        return "-$formatted"
+    }
+
+    return $formatted
 }
 
 # Elevacao para administrador
@@ -812,65 +923,234 @@ function Acao-9-MapearDesmapearUnidade {
 }
 
 function Acao-10-LimpezaTemporarios {
-    Write-Info "Limpando arquivos temporarios do Windows, usuarios e navegadores..."
-    try {
-        $paths = @(
-            $env:TEMP
-            $env:TMP
-            (Join-Path -Path $env:WINDIR -ChildPath 'Temp')
-            (Join-Path -Path $env:SystemRoot -ChildPath 'Prefetch')
-            (Join-Path -Path $env:SystemRoot -ChildPath 'SoftwareDistribution\Download')
-        )
+    Write-Info "Selecione os itens que deseja limpar:"
 
-        foreach ($p in $paths) {
-            Clear-DirectoryContents -Path $p
-        }
+    $logEntries = [System.Collections.Generic.List[object]]::new()
+    $totalFreed = 0L
 
-        $usersRoot = 'C:\Users'
-        if (Test-Path -LiteralPath $usersRoot) {
-            $excluded = @('Public','Default','Default User','All Users')
-            Get-ChildItem -Path $usersRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $excluded -notcontains $_.Name } | ForEach-Object {
-                $userDir = $_
-                Write-Info ("Processando perfil: {0}" -f $userDir.Name)
+    $systemTempTargets = @(
+        $env:TEMP
+        $env:TMP
+        (Join-Path -Path $env:WINDIR -ChildPath 'Temp')
+    )
 
-                $userTempTargets = @(
-                    (Join-Path -Path $userDir.FullName -ChildPath 'AppData\Local\Temp')
-                    (Join-Path -Path $userDir.FullName -ChildPath 'AppData\Local\Microsoft\Windows\INetCache')
-                    (Join-Path -Path $userDir.FullName -ChildPath 'AppData\LocalLow\Microsoft\CryptnetUrlCache')
-                )
+    $prefetchPath = Join-Path -Path $env:SystemRoot -ChildPath 'Prefetch'
+    $softwareDistributionPath = Join-Path -Path $env:SystemRoot -ChildPath 'SoftwareDistribution\Download'
 
-                foreach ($target in $userTempTargets) {
-                    Clear-DirectoryContents -Path $target
+    $users = @()
+    $usersRoot = 'C:\Users'
+    if (Test-Path -LiteralPath $usersRoot) {
+        $excluded = @('Public','Default','Default User','All Users')
+        $users = Get-ChildItem -Path $usersRoot -Directory -ErrorAction SilentlyContinue | Where-Object { $excluded -notcontains $_.Name }
+    }
+
+    $userTempTargets = @(
+        'AppData\Local\Temp',
+        'AppData\Local\Microsoft\Windows\INetCache',
+        'AppData\LocalLow\Microsoft\CryptnetUrlCache'
+    )
+
+    $browserPatterns = @(
+        'AppData\Local\Google\Chrome\User Data\*\Cache',
+        'AppData\Local\Google\Chrome\User Data\*\Code Cache',
+        'AppData\Local\Google\Chrome\User Data\*\GPUCache',
+        'AppData\Local\Google\Chrome\User Data\*\Service Worker\CacheStorage',
+        'AppData\Local\Microsoft\Edge\User Data\*\Cache',
+        'AppData\Local\Microsoft\Edge\User Data\*\Code Cache',
+        'AppData\Local\Microsoft\Edge\User Data\*\GPUCache',
+        'AppData\Local\Microsoft\Edge\User Data\*\Service Worker\CacheStorage',
+        'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Cache',
+        'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Code Cache',
+        'AppData\Local\Opera Software\Opera Stable\Cache',
+        'AppData\Local\Mozilla\Firefox\Profiles\*\cache2',
+        'AppData\Local\Mozilla\Firefox\Profiles\*\startupCache'
+    )
+
+    $premiereTargets = @(
+        'AppData\Roaming\Adobe\Common\Media Cache',
+        'AppData\Roaming\Adobe\Common\Media Cache Files',
+        'AppData\Roaming\Adobe\Common\Peak Files',
+        'AppData\Local\Adobe\Common\Media Cache',
+        'AppData\Local\Adobe\Common\Media Cache Files',
+        'AppData\Local\Adobe\Common\Peak Files'
+    )
+
+    $afterEffectsPatterns = @(
+        'AppData\Roaming\Adobe\After Effects\*\Cache',
+        'AppData\Roaming\Adobe\After Effects\*\Disk Cache',
+        'AppData\Roaming\Adobe\After Effects\*\Media Cache',
+        'AppData\Local\Adobe\After Effects\*\Cache',
+        'AppData\Local\Adobe\After Effects\*\Disk Cache',
+        'AppData\Local\Adobe\After Effects\*\Media Cache'
+    )
+
+    $actions = @(
+        [PSCustomObject]@{
+            Label  = 'Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)'
+            Action = {
+                param($ctx)
+                foreach ($target in $systemTempTargets) {
+                    $totalFreed += Clear-DirectoryContents -Path $target -Report $logEntries -Source $ctx.Label
                 }
-
-                $browserPatterns = @(
-                    'AppData\Local\Google\Chrome\User Data\*\Cache',
-                    'AppData\Local\Google\Chrome\User Data\*\Code Cache',
-                    'AppData\Local\Google\Chrome\User Data\*\GPUCache',
-                    'AppData\Local\Google\Chrome\User Data\*\Service Worker\CacheStorage',
-                    'AppData\Local\Microsoft\Edge\User Data\*\Cache',
-                    'AppData\Local\Microsoft\Edge\User Data\*\Code Cache',
-                    'AppData\Local\Microsoft\Edge\User Data\*\GPUCache',
-                    'AppData\Local\Microsoft\Edge\User Data\*\Service Worker\CacheStorage',
-                    'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Cache',
-                    'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Code Cache',
-                    'AppData\Local\Opera Software\Opera Stable\Cache',
-                    'AppData\Local\Mozilla\Firefox\Profiles\*\cache2',
-                    'AppData\Local\Mozilla\Firefox\Profiles\*\startupCache'
-                )
-
-                foreach ($pattern in $browserPatterns) {
-                    $patternPath = Join-Path $userDir.FullName $pattern
-                    Get-Item -Path $patternPath -ErrorAction SilentlyContinue | ForEach-Object {
-                        Clear-DirectoryContents -Path $_.FullName
+            }
+        },
+        [PSCustomObject]@{
+            Label  = 'Prefetch do Windows'
+            Action = {
+                param($ctx)
+                $totalFreed += Clear-DirectoryContents -Path $prefetchPath -Report $logEntries -Source $ctx.Label
+            }
+        },
+        [PSCustomObject]@{
+            Label  = 'Cache de atualizacoes (SoftwareDistribution\Download)'
+            Action = {
+                param($ctx)
+                $totalFreed += Clear-DirectoryContents -Path $softwareDistributionPath -Report $logEntries -Source $ctx.Label
+            }
+        },
+        [PSCustomObject]@{
+            Label  = 'Pastas temporarias basicas dos usuarios'
+            Action = {
+                param($ctx)
+                if (-not $users) {
+                    Write-Info "Nenhum perfil de usuario encontrado para temporarios basicos."
+                    return
+                }
+                foreach ($userDir in $users) {
+                    Write-Info ("Perfil: {0}" -f $userDir.Name)
+                    foreach ($target in $userTempTargets) {
+                        $path = Join-Path -Path $userDir.FullName -ChildPath $target
+                        $totalFreed += Clear-DirectoryContents -Path $path -Report $logEntries -Source $ctx.Label
+                    }
+                }
+            }
+        },
+        [PSCustomObject]@{
+            Label  = 'Caches de navegadores (Chrome, Edge, Brave, Opera, Firefox)'
+            Action = {
+                param($ctx)
+                if (-not $users) {
+                    Write-Info "Nenhum perfil de usuario encontrado para caches de navegadores."
+                    return
+                }
+                foreach ($userDir in $users) {
+                    Write-Info ("Perfil: {0}" -f $userDir.Name)
+                    foreach ($pattern in $browserPatterns) {
+                        $patternPath = Join-Path $userDir.FullName $pattern
+                        $items = Get-Item -Path $patternPath -ErrorAction SilentlyContinue
+                        foreach ($item in @($items)) {
+                            $totalFreed += Clear-DirectoryContents -Path $item.FullName -DisplayName $item.FullName -Report $logEntries -Source $ctx.Label
+                        }
+                    }
+                }
+            }
+        },
+        [PSCustomObject]@{
+            Label  = 'Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)'
+            Action = {
+                param($ctx)
+                if (-not $users) {
+                    Write-Info "Nenhum perfil de usuario encontrado para caches do Adobe Premiere."
+                    return
+                }
+                foreach ($userDir in $users) {
+                    Write-Info ("Perfil: {0}" -f $userDir.Name)
+                    foreach ($target in $premiereTargets) {
+                        $path = Join-Path -Path $userDir.FullName -ChildPath $target
+                        $totalFreed += Clear-DirectoryContents -Path $path -Report $logEntries -Source $ctx.Label
+                    }
+                }
+            }
+        },
+        [PSCustomObject]@{
+            Label  = 'Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)'
+            Action = {
+                param($ctx)
+                if (-not $users) {
+                    Write-Info "Nenhum perfil de usuario encontrado para caches do Adobe After Effects."
+                    return
+                }
+                foreach ($userDir in $users) {
+                    Write-Info ("Perfil: {0}" -f $userDir.Name)
+                    foreach ($pattern in $afterEffectsPatterns) {
+                        $patternPath = Join-Path $userDir.FullName $pattern
+                        $items = Get-Item -Path $patternPath -ErrorAction SilentlyContinue
+                        foreach ($item in @($items)) {
+                            $totalFreed += Clear-DirectoryContents -Path $item.FullName -DisplayName $item.FullName -Report $logEntries -Source $ctx.Label
+                        }
                     }
                 }
             }
         }
+    )
 
-        Write-Ok "Limpeza concluida."
-    } catch {
-        Write-Err "Erro na limpeza: $($_.Exception.Message)"
+    for ($i = 0; $i -lt $actions.Count; $i++) {
+        $index = $i + 1
+        Write-Host ("[{0}] {1}" -f $index, $actions[$i].Label)
+    }
+
+    $selection = Read-Host "Informe os numeros desejados separados por virgula (ENTER para todos)"
+
+    $selectedActions = @()
+    if ([string]::IsNullOrWhiteSpace($selection) -or $selection.Trim() -eq '*') {
+        $selectedActions = $actions
+    } else {
+        $parts = $selection -split '[,; ]+' | Where-Object { $_ }
+        $indices = @()
+        $invalid = @()
+        foreach ($part in $parts) {
+            if ($part -match '^\d+$') {
+                $value = [int]$part
+                if ($value -ge 1 -and $value -le $actions.Count) {
+                    $indices += $value
+                } else {
+                    $invalid += $part
+                }
+            } else {
+                $invalid += $part
+            }
+        }
+
+        if ($invalid) {
+            Write-Warn ("Selecao invalida: {0}" -f ($invalid -join ', '))
+            Pause-Enter
+            return
+        }
+
+        $selectedActions = $indices | Sort-Object -Unique | ForEach-Object { $actions[$_ - 1] }
+    }
+
+    if (-not $selectedActions) {
+        Write-Info "Nenhuma limpeza selecionada."
+        Pause-Enter
+        return
+    }
+
+    foreach ($action in $selectedActions) {
+        try {
+            Write-Info ("Executando: {0}" -f $action.Label)
+            $before = $totalFreed
+            & $action.Action $action
+            $delta = $totalFreed - $before
+            if ($delta -gt 0) {
+                Write-Info ("Espaco liberado nesta etapa: {0}" -f (Format-Bytes $delta))
+            } else {
+                Write-Info "Nenhum item removido nesta etapa."
+            }
+        } catch {
+            Write-Err ("Falha ao executar {0}: {1}" -f $action.Label, $_.Exception.Message)
+        }
+    }
+
+    $formattedTotal = Format-Bytes $totalFreed
+    Write-Ok ("Limpeza concluida. Total liberado: {0}" -f $formattedTotal)
+
+    if ($logEntries.Count -gt 0) {
+        $logFile = Join-Path $Global:MW_LogDir ("limpeza_temporarios_{0:yyyyMMdd_HHmmss}.csv" -f (Get-Date))
+        $logEntries | Export-Csv -Path $logFile -NoTypeInformation -Encoding UTF8
+        Write-Info ("Log detalhado salvo em: {0}" -f $logFile)
+    } else {
+        Write-Info "Nenhum item foi removido nas rotinas selecionadas."
     }
 
     Pause-Enter
@@ -974,7 +1254,7 @@ function Invoke-WindowsDebloatSycnex {
         Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/Sycnex/Windows10Debloater/master/Windows10Debloater.ps1" -OutFile $debloat
         $silent = Prompt-YesNo "Executar o debloat Sycnex no modo silencioso recomendado?" -DefaultYes
         if ($silent) {
-            powershell -ExecutionPolicy Bypass -File $debloat -ArgumentList '-Silent','-SysPrep'
+            powershell -ExecutionPolicy Bypass -File $debloat -Silent -SysPrep
         } else {
             powershell -ExecutionPolicy Bypass -File $debloat
         }

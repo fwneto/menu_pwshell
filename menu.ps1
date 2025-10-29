@@ -38,6 +38,32 @@ function Pause-Enter {
     Read-Host "Pressione ENTER para continuar" | Out-Null
 }
 
+function Prompt-YesNo {
+    param(
+        [Parameter(Mandatory)][string]$Message,
+        [switch]$DefaultYes
+    )
+
+    while ($true) {
+        $suffix = if ($DefaultYes) { "[S/n]" } else { "[s/N]" }
+        $answer = Read-Host ("{0} {1}" -f $Message, $suffix)
+        if ([string]::IsNullOrWhiteSpace($answer)) {
+            return [bool]$DefaultYes
+        }
+
+        switch ($answer.Trim().ToUpperInvariant()) {
+            'S' { return $true }
+            'Y' { return $true }
+            'SIM' { return $true }
+            'YES' { return $true }
+            'N' { return $false }
+            'NAO' { return $false }
+            'NO' { return $false }
+            default { Write-Warn "Resposta invalida. Informe S ou N." }
+        }
+    }
+}
+
 function Clear-DirectoryContents {
     param(
         [Parameter(Mandatory)][string]$Path,
@@ -941,17 +967,278 @@ function Acao-11-RemoverPerfisUsuario {
     Pause-Enter
 }
 
-function Acao-12-DebloatSycnex {
-    Write-Info "Executando Windows10Debloater (Sycnex)..."
+function Invoke-WindowsDebloatSycnex {
+    Write-Info "Preparando Windows10Debloater (Sycnex)..."
     try {
         $debloat = Join-Path $Global:MW_Temp 'Windows10Debloater.ps1'
         Invoke-WebRequest -UseBasicParsing -Uri "https://raw.githubusercontent.com/Sycnex/Windows10Debloater/master/Windows10Debloater.ps1" -OutFile $debloat
-        powershell -ExecutionPolicy Bypass -File $debloat
-        Write-Ok "Debloat finalizado."
+        $silent = Prompt-YesNo "Executar o debloat Sycnex no modo silencioso recomendado?" -DefaultYes
+        if ($silent) {
+            powershell -ExecutionPolicy Bypass -File $debloat -ArgumentList '-Silent','-SysPrep'
+        } else {
+            powershell -ExecutionPolicy Bypass -File $debloat
+        }
+        Write-Ok "Debloat Sycnex finalizado."
     } catch {
-        Write-Err "Erro no debloat: $($_.Exception.Message)"
+        Write-Err "Erro ao executar Windows10Debloater: $($_.Exception.Message)"
     }
-    Pause-Enter
+}
+
+function Invoke-WindowsDebloatChrisTitus {
+    Write-Info "Abrindo WinUtil (Chris Titus)..."
+    try {
+        $command = "& { iwr -UseBasicParsing -Uri 'https://christitus.com/win' | iex }"
+        powershell -NoProfile -ExecutionPolicy Bypass -Command $command
+        Write-Ok "WinUtil Chris Titus finalizado."
+    } catch {
+        Write-Err "Erro ao executar WinUtil: $($_.Exception.Message)"
+    }
+}
+
+function Invoke-WindowsDebloatCustom {
+    Write-Info "Configurando debloat customizado..."
+
+    $actions = @(
+        [PSCustomObject]@{
+            Key     = 'RemoveConsumerApps'
+            Label   = 'Remover aplicativos padrão de consumidor (3D Viewer, Jogos, Notícias, etc.)'
+            Default = $true
+            Action  = {
+                $apps = @(
+                    'Microsoft.3DBuilder',
+                    'Microsoft.BingNews',
+                    'Microsoft.BingWeather',
+                    'Microsoft.GetHelp',
+                    'Microsoft.Getstarted',
+                    'Microsoft.Microsoft3DViewer',
+                    'Microsoft.MicrosoftOfficeHub',
+                    'Microsoft.MicrosoftSolitaireCollection',
+                    'Microsoft.MixedReality.Portal',
+                    'Microsoft.MSPaint',
+                    'Microsoft.People',
+                    'Microsoft.SkypeApp',
+                    'Microsoft.Todos',
+                    'Microsoft.Xbox.TCUI',
+                    'Microsoft.XboxApp',
+                    'Microsoft.XboxGameOverlay',
+                    'Microsoft.XboxGamingOverlay',
+                    'Microsoft.XboxIdentityProvider',
+                    'Microsoft.XboxSpeechToTextOverlay',
+                    'Microsoft.ZuneMusic',
+                    'Microsoft.ZuneVideo'
+                )
+
+                foreach ($app in $apps) {
+                    try {
+                        Get-AppxPackage -AllUsers -Name $app -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+                        Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $app } | ForEach-Object {
+                            Remove-AppxProvisionedPackage -Online -PackageName $_.PackageName -ErrorAction SilentlyContinue
+                        }
+                    } catch {
+                        Write-Warn ("Falha ao remover {0}: {1}" -f $app, $_.Exception.Message)
+                    }
+                }
+                Write-Ok "Pacotes de consumidor removidos (quando presentes)."
+            }
+        }
+        [PSCustomObject]@{
+            Key     = 'RemoveOneDrive'
+            Label   = 'Remover Microsoft OneDrive'
+            Default = $false
+            Action  = {
+                try {
+                    Stop-Process -Name OneDrive -Force -ErrorAction SilentlyContinue
+                } catch {}
+
+                $setup = @(
+                    (Join-Path $env:SystemRoot 'System32\OneDriveSetup.exe'),
+                    (Join-Path $env:SystemRoot 'SysWOW64\OneDriveSetup.exe')
+                ) | Where-Object { Test-Path $_ } | Select-Object -First 1
+
+                if ($setup) {
+                    try {
+                        Start-Process -FilePath $setup -ArgumentList '/uninstall' -Wait -WindowStyle Hidden
+                        Write-Ok "OneDrive desinstalado."
+                    } catch {
+                        Write-Warn ("Falha ao desinstalar OneDrive via instalador: {0}" -f $_.Exception.Message)
+                    }
+                } else {
+                    Write-Warn "Instalador do OneDrive nao encontrado."
+                }
+
+                $paths = @(
+                    Join-Path $env:UserProfile 'OneDrive',
+                    Join-Path $env:UserProfile 'SkyDrive',
+                    Join-Path $env:SystemRoot 'OneDrive'
+                )
+                foreach ($path in $paths) {
+                    try {
+                        if (Test-Path $path) {
+                            Remove-Item -LiteralPath $path -Recurse -Force -ErrorAction SilentlyContinue
+                        }
+                    } catch {
+                        Write-Warn ("Falha ao limpar {0}: {1}" -f $path, $_.Exception.Message)
+                    }
+                }
+            }
+        }
+        [PSCustomObject]@{
+            Key     = 'DisableTelemetry'
+            Label   = 'Desativar telemetria (AllowTelemetry=0, tarefas CEIP)'
+            Default = $true
+            Action  = {
+                try {
+                    New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' -Force | Out-Null
+                    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\DataCollection' -Name 'AllowTelemetry' -Type DWord -Value 0
+                    Write-Ok "Telemetria ajustada para AllowTelemetry=0."
+                } catch {
+                    Write-Warn ("Falha ao ajustar telemetria: {0}" -f $_.Exception.Message)
+                }
+
+                $tasks = @(
+                    '\Microsoft\Windows\Application Experience\Microsoft Compatibility Appraiser',
+                    '\Microsoft\Windows\Application Experience\ProgramDataUpdater',
+                    '\Microsoft\Windows\Autochk\Proxy',
+                    '\Microsoft\Windows\Customer Experience Improvement Program\Consolidator',
+                    '\Microsoft\Windows\Customer Experience Improvement Program\UsbCeip',
+                    '\Microsoft\Windows\DiskDiagnostic\Microsoft-Windows-DiskDiagnosticDataCollector'
+                )
+
+                foreach ($task in $tasks) {
+                    try {
+                        schtasks.exe /Change /TN $task /Disable *> $null
+                    } catch {
+                        Write-Warn ("Falha ao desabilitar tarefa {0}: {1}" -f $task, $_.Exception.Message)
+                    }
+                }
+            }
+        }
+        [PSCustomObject]@{
+            Key     = 'DisableCortana'
+            Label   = 'Desativar Cortana/Pesquisa online'
+            Default = $true
+            Action  = {
+                try {
+                    New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search' -Force | Out-Null
+                    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Search' -Name 'AllowCortana' -Type DWord -Value 0
+                    Stop-Process -Name 'Cortana','SearchUI','SearchApp' -Force -ErrorAction SilentlyContinue
+                    Write-Ok "Cortana desativada."
+                } catch {
+                    Write-Warn ("Falha ao desativar Cortana: {0}" -f $_.Exception.Message)
+                }
+            }
+        }
+        [PSCustomObject]@{
+            Key     = 'DisableWidgets'
+            Label   = 'Desativar Widgets / Noticias e Interesses na barra de tarefas'
+            Default = $false
+            Action  = {
+                try {
+                    New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' -Force | Out-Null
+                    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Dsh' -Name 'AllowNewsAndInterests' -Type DWord -Value 0
+                    New-Item -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds' -Force | Out-Null
+                    Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\Windows\Windows Feeds' -Name 'EnableFeeds' -Type DWord -Value 0
+                    Write-Ok "Widgets/Noticias desativados para novas sessoes."
+                } catch {
+                    Write-Warn ("Falha ao desativar widgets: {0}" -f $_.Exception.Message)
+                }
+            }
+        }
+        [PSCustomObject]@{
+            Key     = 'RemoveTeams'
+            Label   = 'Remover Microsoft Teams (AppX + Teams Machine-Wide)'
+            Default = $false
+            Action  = {
+                try {
+                    Get-AppxPackage -AllUsers MicrosoftTeams -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+                } catch {
+                    Write-Warn ("Falha ao remover MicrosoftTeams (AppX): {0}" -f $_.Exception.Message)
+                }
+
+                try {
+                    $wingetAvailable = (Get-Command winget -ErrorAction SilentlyContinue) -ne $null
+                    if ($wingetAvailable) {
+                        winget uninstall --id Microsoft.Teams --silent --accept-package-agreements --accept-source-agreements *> $null
+                        winget uninstall --id Microsoft.Teams.Free --silent --accept-package-agreements --accept-source-agreements *> $null
+                    } else {
+                        Write-Warn "Winget indisponivel; pulei a remocao via instalador."
+                    }
+                } catch {
+                    Write-Warn ("Falha ao remover Teams via winget: {0}" -f $_.Exception.Message)
+                }
+            }
+        }
+    )
+
+    foreach ($entry in $actions) {
+        $apply = Prompt-YesNo ("Aplicar: {0}?" -f $entry.Label) -DefaultYes:([bool]$entry.Default)
+        $entry | Add-Member -NotePropertyName Selected -NotePropertyValue $apply -Force
+    }
+
+    $selected = $actions | Where-Object { $_.Selected }
+    if (-not $selected) {
+        Write-Warn "Nenhuma acao selecionada para o debloat customizado."
+        return
+    }
+
+    Write-Host "`nSerao aplicadas as seguintes mudancas:" -ForegroundColor Yellow
+    foreach ($entry in $selected) {
+        Write-Host (" - {0}" -f $entry.Label)
+    }
+
+    if (-not (Prompt-YesNo "Confirmar aplicacao das mudancas selecionadas?" -DefaultYes)) {
+        Write-Info "Operacao de debloat customizado cancelada."
+        return
+    }
+
+    foreach ($entry in $selected) {
+        Write-Info ("Executando: {0}" -f $entry.Label)
+        try {
+            & $entry.Action
+        } catch {
+            Write-Err ("Falha geral em {0}: {1}" -f $entry.Key, $_.Exception.Message)
+        }
+    }
+
+    Write-Ok "Debloat customizado concluido."
+}
+
+function Acao-12-DebloatWindows {
+    while ($true) {
+        Clear-Host
+        Write-Host "====== Debloat Windows 10/11 ======" -ForegroundColor Magenta
+        Write-Host "[ 1] Windows10Debloater (Sycnex)"
+        Write-Host "[ 2] WinUtil (Chris Titus) - personalizacao via GUI"
+        Write-Host "[ 3] Debloat customizado (selecionar recursos)"
+        Write-Host "[ 0] Voltar"
+        Write-Host "===================================" -ForegroundColor Magenta
+
+        $choice = Read-Host "Escolha"
+        switch ($choice.Trim()) {
+            '1' {
+                Invoke-WindowsDebloatSycnex
+                Pause-Enter
+                return
+            }
+            '2' {
+                Invoke-WindowsDebloatChrisTitus
+                Pause-Enter
+                return
+            }
+            '3' {
+                Invoke-WindowsDebloatCustom
+                Pause-Enter
+                return
+            }
+            '0' {
+                return
+            }
+            default {
+                Write-Warn "Opcao invalida."
+                Start-Sleep -Milliseconds 900
+            }
+        }
+    }
 }
 
 function Acao-13-BackupRobocopy {
@@ -1070,7 +1357,7 @@ function Mostrar-Menu {
     Write-Host "[ 9] Mapear/Desmapear unidade de rede"
     Write-Host "[10] Limpeza de temporarios"
     Write-Host "[11] Remover perfis de usuario"
-    Write-Host "[12] Debloat do Windows (Sycnex)"
+    Write-Host "[12] Debloat do Windows (Sycnex/Titus/Custom)"
     Write-Host "[13] Backup com Robocopy"
     Write-Host "[14] Exclusao forcada de pasta"
     Write-Host "[ S] Sair  |  [Q] Quit  |  [0] Zero para sair"
@@ -1093,7 +1380,7 @@ function Loop-Menu {
             '9'  { Acao-9-MapearDesmapearUnidade }
             '10' { Acao-10-LimpezaTemporarios }
             '11' { Acao-11-RemoverPerfisUsuario }
-            '12' { Acao-12-DebloatSycnex }
+            '12' { Acao-12-DebloatWindows }
             '13' { Acao-13-BackupRobocopy }
             '14' { Acao-14-ExclusaoForcadaPasta }
             'S' { return }

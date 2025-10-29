@@ -7,7 +7,7 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - Operações com `winget` para atualizar e desinstalar aplicativos com fluxos de fallback interativo.
 - Rotinas com Chocolatey para instalar kits recomendados, atualizar tudo ou remover pacotes específicos.
 - Limpeza segura de diretórios temporários do sistema e caches de navegadores em todos os perfis de usuário.
-- Automação de tarefas administrativas: mapeamento de unidades de rede, remoção de perfis, debloat (Sycnex) e backup com Robocopy.
+- Automação de tarefas administrativas: mapeamento de unidades de rede, remoção de perfis, debloat (Sycnex, Chris Titus WinUtil ou perfil customizado) e backup com Robocopy.
 - Gravação automática de logs e transcripts sob `C:\ProgramData\ManutencaoWindows\Logs`, incluindo arquivos `log_yyyyMMdd_HHmmss.txt` e, quando aplicável, `robocopy_yyyyMMdd_HHmmss.log`.
 
 ## Estrutura do repositório
@@ -40,9 +40,14 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 9. Mapear ou desmapear unidades de rede.
 10. Limpar arquivos temporários do sistema, caches de navegadores e diretórios `Temp` conhecidos.
 11. Remover perfis de usuário selecionados.
-12. Executar o Windows Debloat (Sycnex) com opções guiadas.
+12. Debloat do Windows 10/11 (Sycnex silencioso/interativo, WinUtil Chris Titus ou perfil customizado).
 13. Executar backup via Robocopy (origem/destino customizáveis).
 14. Forçar a exclusão de uma pasta específica após ajustar permissões.
+
+### Debloat do Windows
+- **Sycnex (Windows10Debloater)** – download automático com opção de execução silenciosa (`-Silent -SysPrep`) ou interface original para ajustes manuais.
+- **Chris Titus WinUtil** – carrega o painel gráfico oficial (`https://christitus.com/win`) permitindo marcar/desmarcar recursos antes de aplicar.
+- **Perfil customizado** – seleção passo a passo para remover aplicativos provisionados, desinstalar OneDrive/Teams, desativar telemetria, Cortana e widgets, mantendo controle sobre cada ajuste.
 
 ## Logs e auditoria
 - Cada execução cria um transcript em `C:\ProgramData\ManutencaoWindows\Logs` com data/hora no nome do arquivo.

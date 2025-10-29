@@ -14,9 +14,23 @@ try {
     $OutputEncoding = [Console]::OutputEncoding
 } catch {}
 
-$Global:MW_Base = Join-Path $env:ProgramData 'ManutencaoWindows'
-$Global:MW_LogDir = Join-Path $Global:MW_Base 'Logs'
-$Global:MW_Temp  = Join-Path $Global:MW_Base 'Temp'
+$scriptSource = if ($PSCommandPath) {
+    $PSCommandPath
+} elseif ($MyInvocation -and $MyInvocation.MyCommand -and $MyInvocation.MyCommand.Path) {
+    $MyInvocation.MyCommand.Path
+} else {
+    $null
+}
+
+$Global:MW_ScriptDir = if ($scriptSource) {
+    Split-Path -Parent $scriptSource
+} else {
+    (Get-Location).Path
+}
+
+$Global:MW_Base = $Global:MW_ScriptDir
+$Global:MW_LogDir = Join-Path $Global:MW_ScriptDir 'Logs'
+$Global:MW_Temp  = Join-Path $Global:MW_ScriptDir 'Temp'
 $Global:MW_Log   = Join-Path $Global:MW_LogDir ("log_{0:yyyyMMdd_HHmmss}.txt" -f (Get-Date))
 
 foreach ($d in @($Global:MW_Base,$Global:MW_LogDir,$Global:MW_Temp)) {
@@ -988,98 +1002,180 @@ function Acao-10-LimpezaTemporarios {
         [PSCustomObject]@{
             Label  = 'Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)'
             Action = {
-                param($ctx)
+                param($ctx, $logList)
+                $freed = 0L
                 foreach ($target in $systemTempTargets) {
-                    $totalFreed += Clear-DirectoryContents -Path $target -Report $logEntries -Source $ctx.Label
+                    $freed += Clear-DirectoryContents -Path $target -Report $logList -Source $ctx.Label
                 }
+                if ($logList -and $freed -gt 0) {
+                    $logList.Add([PSCustomObject]@{
+                        Timestamp = Get-Date
+                        Tipo      = 'ResumoAcao'
+                        Acao      = $ctx.Label
+                        Caminho   = '-'
+                        Bytes     = $freed
+                        Tamanho   = Format-Bytes $freed
+                    })
+                }
+                return $freed
             }
         },
         [PSCustomObject]@{
             Label  = 'Prefetch do Windows'
             Action = {
-                param($ctx)
-                $totalFreed += Clear-DirectoryContents -Path $prefetchPath -Report $logEntries -Source $ctx.Label
+                param($ctx, $logList)
+                $freed = Clear-DirectoryContents -Path $prefetchPath -Report $logList -Source $ctx.Label
+                if ($logList -and $freed -gt 0) {
+                    $logList.Add([PSCustomObject]@{
+                        Timestamp = Get-Date
+                        Tipo      = 'ResumoAcao'
+                        Acao      = $ctx.Label
+                        Caminho   = '-'
+                        Bytes     = $freed
+                        Tamanho   = Format-Bytes $freed
+                    })
+                }
+                return $freed
             }
         },
         [PSCustomObject]@{
             Label  = 'Cache de atualizacoes (SoftwareDistribution\Download)'
             Action = {
-                param($ctx)
-                $totalFreed += Clear-DirectoryContents -Path $softwareDistributionPath -Report $logEntries -Source $ctx.Label
+                param($ctx, $logList)
+                $freed = Clear-DirectoryContents -Path $softwareDistributionPath -Report $logList -Source $ctx.Label
+                if ($logList -and $freed -gt 0) {
+                    $logList.Add([PSCustomObject]@{
+                        Timestamp = Get-Date
+                        Tipo      = 'ResumoAcao'
+                        Acao      = $ctx.Label
+                        Caminho   = '-'
+                        Bytes     = $freed
+                        Tamanho   = Format-Bytes $freed
+                    })
+                }
+                return $freed
             }
         },
         [PSCustomObject]@{
             Label  = 'Pastas temporarias basicas dos usuarios'
             Action = {
-                param($ctx)
+                param($ctx, $logList)
                 if (-not $users) {
                     Write-Info "Nenhum perfil de usuario encontrado para temporarios basicos."
-                    return
+                    return 0
                 }
+                $freed = 0L
                 foreach ($userDir in $users) {
                     Write-Info ("Perfil: {0}" -f $userDir.Name)
                     foreach ($target in $userTempTargets) {
                         $path = Join-Path -Path $userDir.FullName -ChildPath $target
-                        $totalFreed += Clear-DirectoryContents -Path $path -Report $logEntries -Source $ctx.Label
+                        $freed += Clear-DirectoryContents -Path $path -Report $logList -Source $ctx.Label
                     }
                 }
+                if ($logList -and $freed -gt 0) {
+                    $logList.Add([PSCustomObject]@{
+                        Timestamp = Get-Date
+                        Tipo      = 'ResumoAcao'
+                        Acao      = $ctx.Label
+                        Caminho   = '-'
+                        Bytes     = $freed
+                        Tamanho   = Format-Bytes $freed
+                    })
+                }
+                return $freed
             }
         },
         [PSCustomObject]@{
             Label  = 'Caches de navegadores (Chrome, Edge, Brave, Opera, Firefox)'
             Action = {
-                param($ctx)
+                param($ctx, $logList)
                 if (-not $users) {
                     Write-Info "Nenhum perfil de usuario encontrado para caches de navegadores."
-                    return
+                    return 0
                 }
+                $freed = 0L
                 foreach ($userDir in $users) {
                     Write-Info ("Perfil: {0}" -f $userDir.Name)
                     foreach ($pattern in $browserPatterns) {
                         $patternPath = Join-Path $userDir.FullName $pattern
                         $items = Get-Item -Path $patternPath -ErrorAction SilentlyContinue
                         foreach ($item in @($items)) {
-                            $totalFreed += Clear-DirectoryContents -Path $item.FullName -DisplayName $item.FullName -Report $logEntries -Source $ctx.Label
+                            $freed += Clear-DirectoryContents -Path $item.FullName -DisplayName $item.FullName -Report $logList -Source $ctx.Label
                         }
                     }
                 }
+                if ($logList -and $freed -gt 0) {
+                    $logList.Add([PSCustomObject]@{
+                        Timestamp = Get-Date
+                        Tipo      = 'ResumoAcao'
+                        Acao      = $ctx.Label
+                        Caminho   = '-'
+                        Bytes     = $freed
+                        Tamanho   = Format-Bytes $freed
+                    })
+                }
+                return $freed
             }
         },
         [PSCustomObject]@{
             Label  = 'Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)'
             Action = {
-                param($ctx)
+                param($ctx, $logList)
                 if (-not $users) {
                     Write-Info "Nenhum perfil de usuario encontrado para caches do Adobe Premiere."
-                    return
+                    return 0
                 }
+                $freed = 0L
                 foreach ($userDir in $users) {
                     Write-Info ("Perfil: {0}" -f $userDir.Name)
                     foreach ($target in $premiereTargets) {
                         $path = Join-Path -Path $userDir.FullName -ChildPath $target
-                        $totalFreed += Clear-DirectoryContents -Path $path -Report $logEntries -Source $ctx.Label
+                        $freed += Clear-DirectoryContents -Path $path -Report $logList -Source $ctx.Label
                     }
                 }
+                if ($logList -and $freed -gt 0) {
+                    $logList.Add([PSCustomObject]@{
+                        Timestamp = Get-Date
+                        Tipo      = 'ResumoAcao'
+                        Acao      = $ctx.Label
+                        Caminho   = '-'
+                        Bytes     = $freed
+                        Tamanho   = Format-Bytes $freed
+                    })
+                }
+                return $freed
             }
         },
         [PSCustomObject]@{
             Label  = 'Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)'
             Action = {
-                param($ctx)
+                param($ctx, $logList)
                 if (-not $users) {
                     Write-Info "Nenhum perfil de usuario encontrado para caches do Adobe After Effects."
-                    return
+                    return 0
                 }
+                $freed = 0L
                 foreach ($userDir in $users) {
                     Write-Info ("Perfil: {0}" -f $userDir.Name)
                     foreach ($pattern in $afterEffectsPatterns) {
                         $patternPath = Join-Path $userDir.FullName $pattern
                         $items = Get-Item -Path $patternPath -ErrorAction SilentlyContinue
                         foreach ($item in @($items)) {
-                            $totalFreed += Clear-DirectoryContents -Path $item.FullName -DisplayName $item.FullName -Report $logEntries -Source $ctx.Label
+                            $freed += Clear-DirectoryContents -Path $item.FullName -DisplayName $item.FullName -Report $logList -Source $ctx.Label
                         }
                     }
                 }
+                if ($logList -and $freed -gt 0) {
+                    $logList.Add([PSCustomObject]@{
+                        Timestamp = Get-Date
+                        Tipo      = 'ResumoAcao'
+                        Acao      = $ctx.Label
+                        Caminho   = '-'
+                        Bytes     = $freed
+                        Tamanho   = Format-Bytes $freed
+                    })
+                }
+                return $freed
             }
         }
     )
@@ -1129,11 +1225,10 @@ function Acao-10-LimpezaTemporarios {
     foreach ($action in $selectedActions) {
         try {
             Write-Info ("Executando: {0}" -f $action.Label)
-            $before = $totalFreed
-            & $action.Action $action
-            $delta = $totalFreed - $before
-            if ($delta -gt 0) {
-                Write-Info ("Espaco liberado nesta etapa: {0}" -f (Format-Bytes $delta))
+            $freed = & $action.Action $action $logEntries
+            if ($freed -gt 0) {
+                $totalFreed += $freed
+                Write-Info ("Espaco liberado nesta etapa: {0}" -f (Format-Bytes $freed))
             } else {
                 Write-Info "Nenhum item removido nesta etapa."
             }
@@ -1145,12 +1240,21 @@ function Acao-10-LimpezaTemporarios {
     $formattedTotal = Format-Bytes $totalFreed
     Write-Ok ("Limpeza concluida. Total liberado: {0}" -f $formattedTotal)
 
-    if ($logEntries.Count -gt 0) {
-        $logFile = Join-Path $Global:MW_LogDir ("limpeza_temporarios_{0:yyyyMMdd_HHmmss}.csv" -f (Get-Date))
+    $logEntries.Add([PSCustomObject]@{
+        Timestamp = Get-Date
+        Tipo      = 'ResumoGeral'
+        Acao      = 'Total'
+        Caminho   = '-'
+        Bytes     = $totalFreed
+        Tamanho   = $formattedTotal
+    })
+
+    $logFile = Join-Path $Global:MW_LogDir ("limpeza_temporarios_{0:yyyyMMdd_HHmmss}.csv" -f (Get-Date))
+    try {
         $logEntries | Export-Csv -Path $logFile -NoTypeInformation -Encoding UTF8
         Write-Info ("Log detalhado salvo em: {0}" -f $logFile)
-    } else {
-        Write-Info "Nenhum item foi removido nas rotinas selecionadas."
+    } catch {
+        Write-Warn ("Falha ao gravar o log detalhado em {0}: {1}" -f $logFile, $_.Exception.Message)
     }
 
     Pause-Enter

@@ -1260,6 +1260,152 @@ function Acao-10-LimpezaTemporarios {
     Pause-Enter
 }
 
+function Acao-15-LimpadorRegistro {
+    Write-Info "Esta opcao instala e abre uma ferramenta confiavel para limpeza e manutencao."
+    Write-Warn "Revise a analise proposta pela ferramenta antes de aplicar quaisquer correcoes."
+
+    $programFiles    = $env:ProgramFiles
+    $programFilesX86 = ${env:ProgramFiles(x86)}
+
+    $ferramentas = @(
+        [PSCustomObject]@{
+            Numero          = 1
+            Nome            = 'BleachBit'
+            WingetId        = 'BleachBit.BleachBit'
+            ChocoId         = 'bleachbit'
+            Executaveis     = @('bleachbit.exe', 'bleachbit_console.exe')
+            CaminhosDiretos = @(
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'BleachBit\bleachbit.exe' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'BleachBit\bleachbit.exe' }
+            )
+        }
+        [PSCustomObject]@{
+            Numero          = 2
+            Nome            = 'Glary Utilities'
+            WingetId        = 'Glarysoft.GlaryUtilities'
+            ChocoId         = 'glaryutilities'
+            Executaveis     = @('Integrator.exe', 'GlaryUtilities.exe')
+            CaminhosDiretos = @(
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\Integrator.exe' }
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\Integrator.exe' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+            )
+        }
+    )
+
+    foreach ($item in $ferramentas) {
+        Write-Host ("[{0}] {1}" -f $item.Numero, $item.Nome)
+    }
+    Write-Host "[0] Voltar"
+
+    $escolha = Read-Host "Escolha a ferramenta"
+    if ([string]::IsNullOrWhiteSpace($escolha)) {
+        Write-Info "Operacao cancelada."
+        Pause-Enter
+        return
+    }
+
+    if ($escolha.Trim() -eq '0') {
+        Write-Info "Retornando ao menu."
+        Pause-Enter
+        return
+    }
+
+    if (-not ($escolha -match '^\d+$')) {
+        Write-Warn "Informe apenas o numero correspondente."
+        Pause-Enter
+        return
+    }
+
+    $numero = [int]$escolha
+    $ferramenta = $ferramentas | Where-Object { $_.Numero -eq $numero }
+    if (-not $ferramenta) {
+        Write-Warn "Opcao invalida."
+        Pause-Enter
+        return
+    }
+
+    $resolverExecutavel = {
+        param($tool)
+        foreach ($nome in $tool.Executaveis) {
+            try {
+                $cmd = Get-Command -Name $nome -ErrorAction SilentlyContinue
+                if ($cmd -and $cmd.Path) { return $cmd.Path }
+            } catch {}
+        }
+        foreach ($caminho in $tool.CaminhosDiretos) {
+            if ($caminho -and (Test-Path -LiteralPath $caminho)) { return $caminho }
+        }
+        return $null
+    }
+
+    $executavel = & $resolverExecutavel $ferramenta
+    $instalado = [bool]$executavel
+
+    if (-not $instalado) {
+        $tentouInstalar = $false
+        if (Ensure-Winget) {
+            Write-Info ("Instalando {0} via winget..." -f $ferramenta.Nome)
+            try {
+                winget install --id $ferramenta.WingetId -e --accept-package-agreements --accept-source-agreements
+                $tentouInstalar = $true
+            } catch {
+                Write-Warn ("Falha no winget: {0}" -f $_.Exception.Message)
+                if (Prompt-YesNo "Tentar atualizar as fontes do winget (pode demorar)?" -DefaultYes) {
+                    try {
+                        winget source update
+                        winget install --id $ferramenta.WingetId -e --accept-package-agreements --accept-source-agreements
+                        $tentouInstalar = $true
+                    } catch {
+                        Write-Warn ("Falha ao atualizar/instalar pelo winget: {0}" -f $_.Exception.Message)
+                    }
+                }
+            }
+        }
+
+        if (-not $tentouInstalar) {
+            if (Ensure-Choco) {
+                Write-Info ("Instalando {0} via Chocolatey..." -f $ferramenta.Nome)
+                try {
+                    choco install $ferramenta.ChocoId -y --no-progress
+                    $tentouInstalar = $true
+                } catch {
+                    Write-Warn ("Falha no Chocolatey: {0}" -f $_.Exception.Message)
+                }
+            } else {
+                Write-Warn "Chocolatey indisponivel; pulei a tentativa de instalacao por ele."
+            }
+        }
+
+        if (-not $tentouInstalar) {
+            Write-Err "Nao foi possivel instalar a ferramenta automaticamente."
+            Pause-Enter
+            return
+        }
+
+        $executavel = & $resolverExecutavel $ferramenta
+        if (-not $executavel) {
+            Write-Err "Instalacao realizada, mas nao foi possivel localizar o executavel."
+            Pause-Enter
+            return
+        }
+        $instalado = $true
+    }
+
+    Write-Ok ("{0} pronto para uso. A interface sera aberta em seguida." -f $ferramenta.Nome)
+    try {
+        Start-Process -FilePath $executavel
+    } catch {
+        Write-Err ("Falha ao abrir {0}: {1}" -f $ferramenta.Nome, $_.Exception.Message)
+        Pause-Enter
+        return
+    }
+
+    Write-Info "Execute a limpeza desejada na interface da ferramenta e feche-a quando concluir."
+    Pause-Enter
+}
+
 function Acao-11-RemoverPerfisUsuario {
     Write-Warn "ATENCAO: esta rotina remove perfis de usuario (pastas em C:\Users) que nao estejam carregados."
     try {
@@ -1744,6 +1890,7 @@ function Mostrar-Menu {
     Write-Host "[12] Debloat do Windows (Sycnex/Titus/Custom)"
     Write-Host "[13] Backup com Robocopy"
     Write-Host "[14] Exclusao forcada de pasta"
+    Write-Host "[15] Limpeza de registro (BleachBit/Glary)"
     Write-Host "[ S] Sair  |  [Q] Quit  |  [0] Zero para sair"
     Write-Host "=========================================" -ForegroundColor Magenta
 }
@@ -1767,6 +1914,7 @@ function Loop-Menu {
             '12' { Acao-12-DebloatWindows }
             '13' { Acao-13-BackupRobocopy }
             '14' { Acao-14-ExclusaoForcadaPasta }
+            '15' { Acao-15-LimpadorRegistro }
             'S' { return }
             'Q' { return }
             '0' { return }

@@ -8,6 +8,7 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - Rotinas com Chocolatey para instalar kits recomendados, atualizar tudo ou remover pacotes específicos.
 - Limpeza segura de diretórios temporários do sistema e caches de navegadores em todos os perfis de usuário.
 - Automação de tarefas administrativas: mapeamento de unidades de rede, remoção de perfis, debloat (Sycnex, Chris Titus WinUtil ou perfil customizado) e backup com Robocopy.
+- Acesso rápido a limpadores de registro confiáveis (BleachBit ou Glary Utilities), com instalação automatizada e execução guiada.
 - Gravação automática de logs e transcripts sob `C:\ProgramData\ManutencaoWindows\Logs`, incluindo arquivos `log_yyyyMMdd_HHmmss.txt` e, quando aplicável, `robocopy_yyyyMMdd_HHmmss.log`.
 
 ## Estrutura do repositório
@@ -43,11 +44,18 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 12. Debloat do Windows 10/11 (Sycnex silencioso/interativo, WinUtil Chris Titus ou perfil customizado).
 13. Executar backup via Robocopy (origem/destino customizáveis).
 14. Forçar a exclusão de uma pasta específica após ajustar permissões.
+15. Abrir limpador de registro (BleachBit ou Glary Utilities) com download/instalação automática.
 
 ### Debloat do Windows
 - **Sycnex (Windows10Debloater)** – download automático com opção de execução silenciosa (`-Silent -SysPrep`) ou interface original para ajustes manuais.
 - **Chris Titus WinUtil** – carrega o painel gráfico oficial (`https://christitus.com/win`) permitindo marcar/desmarcar recursos antes de aplicar.
 - **Perfil customizado** – seleção passo a passo para remover aplicativos provisionados, desinstalar OneDrive/Teams, desativar telemetria, Cortana e widgets, mantendo controle sobre cada ajuste.
+
+### Limpeza de registro (BleachBit / Glary Utilities)
+- A opção 15 detecta se os aplicativos já estão instalados e tenta localizar os executáveis nas pastas padrões (`Program Files` e `Program Files (x86)`).
+- Caso não estejam presentes, o script prioriza a instalação via `winget` (com opção de atualizar as fontes caso falhem) e usa Chocolatey como fallback.
+- Após instalar ou localizar o aplicativo selecionado, o script apenas abre a interface gráfica; o operador decide quais entradas de registro limpar e confirma as ações com o próprio utilitário.
+- Reforce com o time a necessidade de criar pontos de restauração ou backups antes de aplicar correções agressivas.
 
 ## Logs e auditoria
 - Cada execução cria um transcript em `C:\ProgramData\ManutencaoWindows\Logs` com data/hora no nome do arquivo.

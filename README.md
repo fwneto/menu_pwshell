@@ -1,6 +1,6 @@
 # Menu de Manutenção do Windows
 
-Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes de suporte em estações Windows. O script principal (`menu.ps1`) valida privilégios administrativos, garante a estrutura de logs em `C:\ProgramData\ManutencaoWindows\{Logs,Temp}` e registra um transcript completo de cada execução, permitindo auditoria posterior.
+Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes de suporte em estações Windows. O script principal (`menu.ps1`) valida privilégios administrativos, cria as pastas `Logs` e `Temp` ao lado do próprio script e registra um transcript completo de cada execução, permitindo auditoria posterior.
 
 ## Principais recursos
 - Verificação e instalação de Windows Update utilizando `PSWindowsUpdate`.
@@ -9,12 +9,12 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - Limpeza segura de diretórios temporários do sistema e caches de navegadores em todos os perfis de usuário.
 - Automação de tarefas administrativas: mapeamento de unidades de rede, remoção de perfis, debloat (Sycnex, Chris Titus WinUtil ou perfil customizado) e backup com Robocopy.
 - Acesso rápido a limpadores de registro confiáveis (BleachBit ou Glary Utilities), com instalação automatizada e execução guiada.
-- Gravação automática de logs e transcripts sob `C:\ProgramData\ManutencaoWindows\Logs`, incluindo arquivos `log_yyyyMMdd_HHmmss.txt` e, quando aplicável, `robocopy_yyyyMMdd_HHmmss.log`.
+- Gravação automática de logs e transcripts sob a pasta `Logs` no diretório do script, incluindo arquivos `log_yyyyMMdd_HHmmss.txt` e, quando aplicável, `robocopy_yyyyMMdd_HHmmss.log`.
 
 ## Estrutura do repositório
 - `menu.ps1`: script autônomo com todas as funções `Acao-*` expostas no menu.
 - `installer/`: arquivos do instalador (Inno Setup) que empacota o script e cria atalho pronto para uso.
-- `logs/` e `temp/`: diretórios locais de apoio para desenvolvimento; o script utiliza o caminho em `ProgramData` durante a execução real.
+- `logs/` e `temp/`: diretórios locais de apoio para desenvolvimento; ao executar o script, as pastas `Logs` e `Temp` são (re)criadas no mesmo diretório do `menu.ps1`.
 
 ## Pré-requisitos
 - Windows com PowerShell 5.1 ou superior.
@@ -58,9 +58,9 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - Reforce com o time a necessidade de criar pontos de restauração ou backups antes de aplicar correções agressivas.
 
 ## Logs e auditoria
-- Cada execução cria um transcript em `C:\ProgramData\ManutencaoWindows\Logs` com data/hora no nome do arquivo.
+- Cada execução cria um transcript em `.\Logs` (ao lado do `menu.ps1`) com data/hora no nome do arquivo.
 - Rotinas que usam Robocopy geram logs adicionais nomeados `robocopy_yyyyMMdd_HHmmss.log` na mesma pasta.
-- Arquivos temporários são armazenados em `C:\ProgramData\ManutencaoWindows\Temp` e podem ser limpos com segurança pela opção 10.
+- Arquivos temporários são armazenados em `.\Temp`; utilize a opção 10 para limpá-los quando necessário.
 
 ## Desenvolvimento e testes
 - Execute `pwsh -NoProfile -File .\menu.ps1 -Verbose` para depurar mensagens adicionais sem alterar o fluxo.

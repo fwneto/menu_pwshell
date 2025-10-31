@@ -7,6 +7,18 @@
 
 Clear-Host
 
+#region ASCII Banner
+
+$Global:MW_Banner = @'
+__        ___                    _                       __  __       _                   _                 
+\ \      / (_)_ __  _ __   ___  | |_ ___    __ _ _ __   |  \/  | __ _(_)_ __   ___  _ __ | |_ ___  ___  ___ 
+ \ \ /\ / /| | '_ \| '_ \ / _ \ | __/ _ \  / _` | '_ \  | |\/| |/ _` | | '_ \ / _ \| '_ \| __/ _ \/ __|/ _ \
+  \ V  V / | | | | | | | |  __/ | || (_) || (_| | | | | | |  | | (_| | | | | | (_) | | | | ||  __/\__ \  __/
+   \_/\_/  |_|_| |_|_| |_|\___|  \__\___/  \__,_|_| |_| |_|  |_|\__,_|_|_| |_|\___/|_| |_|\__\___||___/\___|
+'@
+
+#endregion
+
 #region Configuracao basica (encoding, log, admin)
 
 try {
@@ -50,6 +62,73 @@ function Write-Err  { param([string]$m) Write-Host "[X]  $m" -ForegroundColor Re
 function Pause-Enter {
     Write-Host ""
     Read-Host "Pressione ENTER para continuar" | Out-Null
+}
+
+function Invoke-CmdCommand {
+    param(
+        [Parameter(Mandatory)][string]$Command,
+        [string]$Display,
+        [switch]$MaskPassword
+    )
+
+    $shown = if ($Display) { $Display } else { $Command }
+    if ($MaskPassword) {
+        $shown = $shown -replace '(?i)(/pass:)\S+', '$1(oculto)'
+    }
+
+    Write-Info $shown
+    & cmd.exe /c $Command
+    $exit = $LASTEXITCODE
+    if ($exit -eq 0) {
+        Write-Ok "Comando concluido."
+    } else {
+        Write-Warn ("Comando retornou codigo {0}." -f $exit)
+    }
+    return $exit
+}
+
+function Invoke-NetUse {
+    param(
+        [Parameter(Mandatory)][string]$Arguments,
+        [string]$Display,
+        [switch]$MaskPassword,
+        [switch]$GuestFallback
+    )
+
+    $cmd = "net use $Arguments"
+    $shown = if ($Display) { $Display } else { $cmd }
+
+    $exit = Invoke-CmdCommand -Command $cmd -Display $shown -MaskPassword:$MaskPassword
+    if ($exit -ne 0 -and $GuestFallback) {
+        Write-Info "Tentando novamente com usuario Guest sem senha..."
+        $fbCmd = [string]::Format('{0} "" /user:Guest', $cmd)
+        $fbShown = [string]::Format('net use {0} "" /user:Guest', $Arguments)
+        $exit = Invoke-CmdCommand -Command $fbCmd -Display $fbShown -MaskPassword:$MaskPassword
+    }
+
+    return $exit
+}
+
+function Remove-NetworkDrive {
+    param([Parameter(Mandatory)][string]$Letter)
+
+    if ([string]::IsNullOrWhiteSpace($Letter)) { return }
+
+    $normalized = $Letter.Trim()
+    if (-not $normalized.EndsWith(':')) {
+        $normalized = "${normalized}:"
+    }
+
+    Write-Info ("Removendo unidade {0}" -f $normalized)
+    & cmd.exe /c ("net use {0} /delete /y" -f $normalized)
+    $exit = $LASTEXITCODE
+    if ($exit -eq 0) {
+        Write-Ok ("Unidade {0} removida." -f $normalized)
+    } elseif ($exit -eq 2) {
+        Write-Info ("Unidade {0} nao estava mapeada." -f $normalized)
+    } else {
+        Write-Warn ("Falha ao remover {0} (codigo {1})." -f $normalized, $exit)
+    }
 }
 
 function Prompt-YesNo {
@@ -902,37 +981,114 @@ function Acao-8-ChocoDesinstalarPacote {
 }
 
 function Acao-9-MapearDesmapearUnidade {
-    Write-Host "`n[1] Mapear unidade de rede"
-    Write-Host "[2] Desmapear unidade de rede"
-    $op = Read-Host "Escolha"
-    switch ($op) {
-        '1' {
-            $letra = Read-Host "Letra da unidade (ex: Z:)"
-            $path  = Read-Host "Caminho UNC (ex: \\servidor\compartilhamento)"
-            $user  = Read-Host "Usuario (ENTER para atual)"
-            $pass  = if ($user) { Read-Host "Senha" } else { $null }
-            try {
-                if ($user) {
-                    New-PSDrive -Name $letra.TrimEnd(':') -PSProvider FileSystem -Root $path -Persist -Credential (New-Object System.Management.Automation.PSCredential($user,(ConvertTo-SecureString $pass -AsPlainText -Force)))
-                } else {
-                    New-PSDrive -Name $letra.TrimEnd(':') -PSProvider FileSystem -Root $path -Persist
+    $scenarios = @(
+        [PSCustomObject]@{
+            Key    = '1'
+            Label  = 'Mapear unidade manualmente'
+            Action = {
+                $letra = Read-Host "Letra da unidade (ex: Z:)"
+                if ([string]::IsNullOrWhiteSpace($letra)) { Write-Warn "Letra invalida."; return }
+
+                $path  = Read-Host "Caminho UNC (ex: \\servidor\compartilhamento)"
+                if ([string]::IsNullOrWhiteSpace($path)) { Write-Warn "Caminho invalido."; return }
+
+                $user  = Read-Host "Usuario (ENTER para atual)"
+                $pass  = if ($user) { Read-Host "Senha" } else { $null }
+                try {
+                    if ($user) {
+                        $secure = ConvertTo-SecureString $pass -AsPlainText -Force
+                        $cred   = New-Object System.Management.Automation.PSCredential($user, $secure)
+                        New-PSDrive -Name $letra.TrimEnd(':') -PSProvider FileSystem -Root $path -Persist -Credential $cred | Out-Null
+                    } else {
+                        New-PSDrive -Name $letra.TrimEnd(':') -PSProvider FileSystem -Root $path -Persist | Out-Null
+                    }
+                    Write-Ok "Unidade $letra mapeada para $path"
+                } catch {
+                    Write-Err "Falha ao mapear: $($_.Exception.Message)"
                 }
-                Write-Ok "Unidade $letra mapeada para $path"
-            } catch {
-                Write-Err "Falha ao mapear: $($_.Exception.Message)"
+            }
+        },
+        [PSCustomObject]@{
+            Key    = '2'
+            Label  = 'Desmapear unidade manualmente'
+            Action = {
+                $letra = Read-Host "Letra da unidade (ex: Z:)"
+                if ([string]::IsNullOrWhiteSpace($letra)) { Write-Warn "Letra invalida."; return }
+
+                try {
+                    Remove-PSDrive -Name $letra.TrimEnd(':') -Force
+                    Write-Ok "Unidade $letra removida."
+                } catch {
+                    Write-Err "Falha ao desmapear: $($_.Exception.Message)"
+                }
+            }
+        },
+        [PSCustomObject]@{
+            Key    = '3'
+            Label  = 'Opcao INGEST'
+            Action = {
+                Write-Host "`n[INGEST] Configurando mapeamentos..." -ForegroundColor Cyan
+                Remove-NetworkDrive -Letter 'X:'
+                Remove-NetworkDrive -Letter 'U:'
+                Invoke-CmdCommand -Command 'cmdkey /add:10.17.40.101 /user:10.17.40.101\ingest /pass:ingest' -MaskPassword
+                Invoke-NetUse -Arguments 'X: \\10.17.40.101\edicao_agro /user:10.17.40.101\ingest ingest /persistent:yes /p:yes' -Display 'net use X: \\10.17.40.101\edicao_agro /user:10.17.40.101\ingest (senha oculta)' -MaskPassword
+                Invoke-NetUse -Arguments 'U: \\HR1\manualimport /p:yes' -GuestFallback
+            }
+        },
+        [PSCustomObject]@{
+            Key    = '4'
+            Label  = 'Opcao REDACAO'
+            Action = {
+                Write-Host "`n[REDACAO] Configurando mapeamentos..." -ForegroundColor Cyan
+                Remove-NetworkDrive -Letter 'I:'
+                Invoke-CmdCommand -Command 'cmdkey /add:10.17.40.101 /user:10.17.40.101\ingest /pass:ingest' -MaskPassword
+                Invoke-NetUse -Arguments 'I: \\10.17.40.101\ingestar /user:10.17.40.101\ingest ingest /persistent:yes /p:yes' -Display 'net use I: \\10.17.40.101\ingestar /user:10.17.40.101\ingest (senha oculta)' -MaskPassword
+            }
+        },
+        [PSCustomObject]@{
+            Key    = '5'
+            Label  = 'Opcao ILHA DE ALTA'
+            Action = {
+                Write-Host "`n[ILHA DE ALTA] Configurando mapeamentos..." -ForegroundColor Cyan
+                Remove-NetworkDrive -Letter 'X:'
+                Remove-NetworkDrive -Letter 'E:'
+                Remove-NetworkDrive -Letter 'T:'
+                Remove-NetworkDrive -Letter 'U:'
+                Invoke-CmdCommand -Command 'cmdkey /add:10.17.40.101 /user:10.17.40.101\ingest /pass:ingest' -MaskPassword
+                Invoke-NetUse -Arguments 'X: \\10.17.40.101\ingestar /user:10.17.40.101\ingest ingest /persistent:yes /p:yes' -Display 'net use X: \\10.17.40.101\ingestar /user:10.17.40.101\ingest (senha oculta)' -MaskPassword
+                Invoke-NetUse -Arguments 'E: \\10.17.40.101\edicao_agro /user:10.17.40.101\ingest ingest /persistent:yes /p:yes' -Display 'net use E: \\10.17.40.101\edicao_agro /user:10.17.40.101\ingest (senha oculta)' -MaskPassword
+                Invoke-NetUse -Arguments 'T: \\10.17.40.101\grafismo /user:10.17.40.101\ingest ingest /persistent:yes /p:yes' -Display 'net use T: \\10.17.40.101\grafismo /user:10.17.40.101\ingest (senha oculta)' -MaskPassword
+                Invoke-NetUse -Arguments 'U: \\HR1\manualimport /p:yes' -GuestFallback
+            }
+        },
+        [PSCustomObject]@{
+            Key    = '6'
+            Label  = 'Opcao LEILAO'
+            Action = {
+                Write-Host "`n[LEILAO] Configurando mapeamentos..." -ForegroundColor Cyan
+                Remove-NetworkDrive -Letter 'L:'
+                Invoke-CmdCommand -Command 'cmdkey /add:10.17.40.101 /user:10.17.40.101\leilao /pass:leilao' -MaskPassword
+                Invoke-NetUse -Arguments 'L: \\10.17.40.101\leilao /user:10.17.40.101\leilao leilao /persistent:yes /p:yes' -Display 'net use L: \\10.17.40.101\leilao /user:10.17.40.101\leilao (senha oculta)' -MaskPassword
             }
         }
-        '2' {
-            $letra = Read-Host "Letra da unidade (ex: Z:)"
-            try {
-                Remove-PSDrive -Name $letra.TrimEnd(':') -Force
-                Write-Ok "Unidade $letra removida."
-            } catch {
-                Write-Err "Falha ao desmapear: $($_.Exception.Message)"
-            }
-        }
-        default { Write-Warn "Opcao invalida."; }
+    )
+
+    Write-Host "`nSelecione a acao desejada:"
+    foreach ($item in $scenarios) {
+        Write-Host ("[{0}] {1}" -f $item.Key, $item.Label)
     }
+
+    $choice = Read-Host "Escolha"
+    if ([string]::IsNullOrWhiteSpace($choice)) { return }
+
+    $selected = $scenarios | Where-Object { $_.Key -eq $choice }
+    if (-not $selected) {
+        Write-Warn "Opcao invalida."
+        Pause-Enter
+        return
+    }
+
+    & $selected.Action
     Pause-Enter
 }
 
@@ -1845,6 +2001,10 @@ function Acao-0-InstalarDependencias {
 
 function Mostrar-SetupInicial {
     Clear-Host
+    if ($Global:MW_Banner) {
+        Write-Host $Global:MW_Banner -ForegroundColor Magenta
+        Write-Host ""
+    }
     Write-Host "====== PREPARACAO INICIAL ======" -ForegroundColor Magenta
     Write-Host "[ 1] Verificar/instalar dependencias"
     Write-Host "[ 2] Prosseguir para o menu principal"
@@ -1875,6 +2035,10 @@ function Loop-SetupInicial {
 
 function Mostrar-Menu {
     Clear-Host
+    if ($Global:MW_Banner) {
+        Write-Host $Global:MW_Banner -ForegroundColor Magenta
+        Write-Host ""
+    }
     Write-Host "========== MENU DE MANUTENCAO ==========" -ForegroundColor Magenta
     Write-Host "[ 1] Verificar atualizacoes do Windows"
     Write-Host "[ 2] Instalar atualizacoes do Windows"

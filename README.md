@@ -7,7 +7,7 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - Operações com `winget` para atualizar e desinstalar aplicativos com fluxos de fallback interativo.
 - Rotinas com Chocolatey para instalar kits recomendados, atualizar tudo ou remover pacotes específicos.
 - Limpeza segura de diretórios temporários do sistema e caches de navegadores em todos os perfis de usuário.
-- Automação de tarefas administrativas: mapeamento de unidades de rede, remoção de perfis, debloat (Sycnex, Chris Titus WinUtil ou perfil customizado) e backup com Robocopy.
+- Automação de tarefas administrativas: mapeamento de unidades de rede com cenários pré-configurados, remoção de perfis, debloat (Sycnex, Chris Titus WinUtil ou perfil customizado) e backup com Robocopy.
 - Acesso rápido a limpadores de registro confiáveis (BleachBit ou Glary Utilities), com instalação automatizada e execução guiada.
 - Gravação automática de logs e transcripts sob a pasta `Logs` no diretório do script, incluindo arquivos `log_yyyyMMdd_HHmmss.txt` e, quando aplicável, `robocopy_yyyyMMdd_HHmmss.log`.
 
@@ -38,7 +38,7 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 6. Instalar um conjunto de programas pré-definidos pelo Chocolatey.
 7. Atualizar todos os pacotes instalados pelo Chocolatey.
 8. Desinstalar pacote do Chocolatey informado pelo técnico.
-9. Mapear ou desmapear unidades de rede.
+9. Mapear ou desmapear unidades de rede (manual ou presets INGEST, REDACAO, ILHA DE ALTA e LEILAO).
 10. Limpar arquivos temporários do sistema, caches de navegadores e diretórios `Temp` conhecidos.
 11. Remover perfis de usuário selecionados.
 12. Debloat do Windows 10/11 (Sycnex silencioso/interativo, WinUtil Chris Titus ou perfil customizado).
@@ -51,6 +51,12 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - **Chris Titus WinUtil** – carrega o painel gráfico oficial (`https://christitus.com/win`) permitindo marcar/desmarcar recursos antes de aplicar.
 - **Perfil customizado** – seleção passo a passo para remover aplicativos provisionados, desinstalar OneDrive/Teams, desativar telemetria, Cortana e widgets, mantendo controle sobre cada ajuste.
 
+### Mapear/Desmapear unidades (Opção 9)
+- **Fluxo manual** – permite informar letra, caminho UNC e credenciais customizadas para mapear, ou apenas a letra para desmapear via `Remove-PSDrive`.
+- **Presets automáticos** – quatro cenários padronizados (INGEST, REDACAO, ILHA DE ALTA e LEILAO) limpam previamente as letras envolvidas, registram a credencial correta com `cmdkey` e recriam os compartilhamentos via `net use`.
+- **Fallback inteligente** – para compartilhamentos anônimos, como `\\HR1\manualimport`, o script tenta novamente com usuário `Guest` e senha em branco caso o primeiro `net use` retorne erro de senha.
+- **Mascaramento de segredos** – senhas informadas nos presets não são exibidas na tela; apenas comandos genéricos aparecem no log, mantendo a rastreabilidade sem vazar credenciais.
+
 ### Limpeza de registro (BleachBit / Glary Utilities)
 - A opção 15 detecta se os aplicativos já estão instalados e tenta localizar os executáveis nas pastas padrões (`Program Files` e `Program Files (x86)`).
 - Caso não estejam presentes, o script prioriza a instalação via `winget` (com opção de atualizar as fontes caso falhem) e usa Chocolatey como fallback.
@@ -59,6 +65,7 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 
 ## Logs e auditoria
 - Cada execução cria um transcript em `.\Logs` (ao lado do `menu.ps1`) com data/hora no nome do arquivo.
+- Comandos sensíveis executados pelos presets de rede são registrados com senhas mascaradas, preservando as evidências sem expor segredos.
 - Rotinas que usam Robocopy geram logs adicionais nomeados `robocopy_yyyyMMdd_HHmmss.log` na mesma pasta.
 - Arquivos temporários são armazenados em `.\Temp`; utilize a opção 10 para limpá-los quando necessário.
 

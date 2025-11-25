@@ -1406,90 +1406,65 @@ function Acao-10-LimpezaTemporarios {
 }
 
 function Acao-15-LimpadorRegistro {
-    Write-Info "Esta opcao instala e abre uma ferramenta confiavel para limpeza e manutencao."
+    Write-Info "Esta opcao permite instalar, abrir ou desinstalar o Glary Utilities."
     Write-Warn "Revise a analise proposta pela ferramenta antes de aplicar quaisquer correcoes."
-    
+
     $programFiles    = $env:ProgramFiles
     $programFilesX86 = ${env:ProgramFiles(x86)}
     $localAppData    = $env:LOCALAPPDATA
 
-    $ferramentas = @(
-        [PSCustomObject]@{
-            Numero          = 1
-            Nome            = 'BleachBit'
-            WingetId        = 'BleachBit.BleachBit'
-            ChocoId         = 'bleachbit'
-            Executaveis     = @('bleachbit.exe', 'bleachbit_console.exe')
-            CaminhosDiretos = @(
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'BleachBit\bleachbit.exe' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'BleachBit\bleachbit.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\BleachBit\bleachbit.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\BleachBit\BleachBit.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'BleachBit\bleachbit.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'BleachBit\BleachBit.exe' }
-            )
-            PastasExtras    = @(
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'BleachBit' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'BleachBit' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\BleachBit' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'BleachBit' }
-            )
-        }
-        [PSCustomObject]@{
-            Numero          = 2
-            Nome            = 'Glary Utilities'
-            WingetId        = 'Glarysoft.GlaryUtilities'
-            ChocoId         = 'glaryutilities'
-            Executaveis     = @('Integrator.exe', 'GlaryUtilities.exe')
-            CaminhosDiretos = @(
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\Integrator.exe' }
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6\Integrator.exe' }
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities\Integrator.exe' }
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\Integrator.exe' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6\Integrator.exe' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities\Integrator.exe' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5\Integrator.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5\GlaryUtilities.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6\Integrator.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6\GlaryUtilities.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities\Integrator.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities\GlaryUtilities.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5\Integrator.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6\Integrator.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities\Integrator.exe' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
-            )
-            PastasExtras    = @(
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5' }
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6' }
-                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6' }
-                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6' }
-                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities' }
-            )
-        }
-    )
-
-    foreach ($item in $ferramentas) {
-        Write-Host ("[{0}] {1}" -f $item.Numero, $item.Nome)
+    $glary = [PSCustomObject]@{
+        Nome            = 'Glary Utilities'
+        WingetId        = 'Glarysoft.GlaryUtilities'
+        ChocoId         = 'glaryutilities'
+        Executaveis     = @('Integrator.exe', 'GlaryUtilities.exe')
+        CaminhosDiretos = @(
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\Integrator.exe' }
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6\Integrator.exe' }
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities\Integrator.exe' }
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\Integrator.exe' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6\Integrator.exe' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities\Integrator.exe' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5\Integrator.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5\GlaryUtilities.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6\Integrator.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6\GlaryUtilities.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities\Integrator.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities\GlaryUtilities.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5\Integrator.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6\Integrator.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities\Integrator.exe' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
+        )
+        PastasExtras    = @(
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5' }
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6' }
+            if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6' }
+            if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6' }
+            if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities' }
+        )
     }
+
+    Write-Host "[1] Instalar/abrir Glary Utilities"
+    Write-Host "[2] Desinstalar Glary Utilities"
     Write-Host "[0] Voltar"
 
-    $escolha = Read-Host "Escolha a ferramenta"
+    $escolha = Read-Host "Escolha a acao"
     if ([string]::IsNullOrWhiteSpace($escolha)) {
         Write-Info "Operacao cancelada."
         Pause-Enter
@@ -1498,20 +1473,6 @@ function Acao-15-LimpadorRegistro {
 
     if ($escolha.Trim() -eq '0') {
         Write-Info "Retornando ao menu."
-        Pause-Enter
-        return
-    }
-
-    if (-not ($escolha -match '^\d+$')) {
-        Write-Warn "Informe apenas o numero correspondente."
-        Pause-Enter
-        return
-    }
-
-    $numero = [int]$escolha
-    $ferramenta = $ferramentas | Where-Object { $_.Numero -eq $numero }
-    if (-not $ferramenta) {
-        Write-Warn "Opcao invalida."
         Pause-Enter
         return
     }
@@ -1542,70 +1503,129 @@ function Acao-15-LimpadorRegistro {
         return $null
     }
 
-    $executavel = & $resolverExecutavel $ferramenta
-    $instalado = [bool]$executavel
+    switch ($escolha.Trim()) {
+        '1' {
+            $executavel = & $resolverExecutavel $glary
+            $instalado = [bool]$executavel
 
-    if (-not $instalado) {
-        $tentouInstalar = $false
-        if (Ensure-Winget) {
-            Write-Info ("Instalando {0} via winget..." -f $ferramenta.Nome)
-            try {
-                winget install --id $ferramenta.WingetId -e --accept-package-agreements --accept-source-agreements
-                $tentouInstalar = $true
-            } catch {
-                Write-Warn ("Falha no winget: {0}" -f $_.Exception.Message)
-                if (Prompt-YesNo "Tentar atualizar as fontes do winget (pode demorar)?" -DefaultYes) {
+            if (-not $instalado) {
+                $tentouInstalar = $false
+                if (Ensure-Winget) {
+                    Write-Info "Instalando Glary Utilities via winget..."
                     try {
-                        winget source update
-                        winget install --id $ferramenta.WingetId -e --accept-package-agreements --accept-source-agreements
+                        winget install --id $glary.WingetId -e --accept-package-agreements --accept-source-agreements
                         $tentouInstalar = $true
                     } catch {
-                        Write-Warn ("Falha ao atualizar/instalar pelo winget: {0}" -f $_.Exception.Message)
+                        Write-Warn ("Falha no winget: {0}" -f $_.Exception.Message)
+                        if (Prompt-YesNo "Tentar atualizar as fontes do winget (pode demorar)?" -DefaultYes) {
+                            try {
+                                winget source update
+                                winget install --id $glary.WingetId -e --accept-package-agreements --accept-source-agreements
+                                $tentouInstalar = $true
+                            } catch {
+                                Write-Warn ("Falha ao atualizar/instalar pelo winget: {0}" -f $_.Exception.Message)
+                            }
+                        }
                     }
                 }
-            }
-        }
 
-        if (-not $tentouInstalar) {
-            if (Ensure-Choco) {
-                Write-Info ("Instalando {0} via Chocolatey..." -f $ferramenta.Nome)
+                if (-not $tentouInstalar) {
+                    if (Ensure-Choco) {
+                        Write-Info "Instalando Glary Utilities via Chocolatey..."
+                        try {
+                            choco install $glary.ChocoId -y --no-progress
+                            $tentouInstalar = $true
+                        } catch {
+                            Write-Warn ("Falha no Chocolatey: {0}" -f $_.Exception.Message)
+                        }
+                    } else {
+                        Write-Warn "Chocolatey indisponivel; pulei a tentativa de instalacao por ele."
+                    }
+                }
+
+                if (-not $tentouInstalar) {
+                    Write-Err "Nao foi possivel instalar a ferramenta automaticamente."
+                    Pause-Enter
+                    return
+                }
+
+                $executavel = & $resolverExecutavel $glary
+                if (-not $executavel) {
+                    Write-Err "Instalacao realizada, mas nao foi possivel localizar o executavel."
+                    Pause-Enter
+                    return
+                }
+                $instalado = $true
+            }
+
+            Write-Ok "Glary Utilities pronto para uso. A interface sera aberta em seguida."
+            try {
+                Start-Process -FilePath $executavel
+            } catch {
+                Write-Err ("Falha ao abrir Glary Utilities: {0}" -f $_.Exception.Message)
+                Pause-Enter
+                return
+            }
+
+            Write-Info "Execute a limpeza desejada na interface da ferramenta e feche-a quando concluir."
+            Pause-Enter
+        }
+        '2' {
+            $executavel = & $resolverExecutavel $glary
+            $instalado = [bool]$executavel
+
+            if (-not $instalado) {
+                Write-Info "Glary Utilities nao parece estar instalado."
+                Pause-Enter
+                return
+            }
+
+            $desinstalou = $false
+            if (Ensure-Winget) {
+                Write-Info "Desinstalando Glary Utilities via winget..."
                 try {
-                    choco install $ferramenta.ChocoId -y --no-progress
-                    $tentouInstalar = $true
+                    winget uninstall --id $glary.WingetId -e --accept-source-agreements
+                    $desinstalou = $true
+                } catch {
+                    Write-Warn ("Falha no winget: {0}" -f $_.Exception.Message)
+                }
+            }
+
+            if (-not $desinstalou -and (Ensure-Choco)) {
+                Write-Info "Desinstalando Glary Utilities via Chocolatey..."
+                try {
+                    choco uninstall $glary.ChocoId -y --no-progress
+                    $desinstalou = $true
                 } catch {
                     Write-Warn ("Falha no Chocolatey: {0}" -f $_.Exception.Message)
                 }
-            } else {
-                Write-Warn "Chocolatey indisponivel; pulei a tentativa de instalacao por ele."
             }
-        }
 
-        if (-not $tentouInstalar) {
-            Write-Err "Nao foi possivel instalar a ferramenta automaticamente."
+            if (-not $desinstalou) {
+                Write-Err "Nao foi possivel desinstalar automaticamente."
+                Pause-Enter
+                return
+            }
+
+            foreach ($pasta in $glary.PastasExtras) {
+                if (-not $pasta) { continue }
+                if (-not (Test-Path -LiteralPath $pasta)) { continue }
+                try {
+                    Remove-Item -LiteralPath $pasta -Recurse -Force -ErrorAction Stop
+                    Write-Info ("Pasta removida: {0}" -f $pasta)
+                } catch {
+                    Write-Warn ("Falha ao remover {0}: {1}" -f $pasta, $_.Exception.Message)
+                }
+            }
+
+            Write-Ok "Glary Utilities desinstalado."
             Pause-Enter
-            return
         }
-
-        $executavel = & $resolverExecutavel $ferramenta
-        if (-not $executavel) {
-            Write-Err "Instalacao realizada, mas nao foi possivel localizar o executavel."
+        default {
+            Write-Warn "Informe apenas o numero correspondente."
             Pause-Enter
-            return
         }
-        $instalado = $true
     }
-
-    Write-Ok ("{0} pronto para uso. A interface sera aberta em seguida." -f $ferramenta.Nome)
-    try {
-        Start-Process -FilePath $executavel
-    } catch {
-        Write-Err ("Falha ao abrir {0}: {1}" -f $ferramenta.Nome, $_.Exception.Message)
-        Pause-Enter
-        return
-    }
-
-    Write-Info "Execute a limpeza desejada na interface da ferramenta e feche-a quando concluir."
-    Pause-Enter
 }
 
 function Acao-11-RemoverPerfisUsuario {
@@ -2100,7 +2120,7 @@ function Mostrar-Menu {
     Write-Host "[12] Debloat do Windows (Sycnex/Titus/Custom)"
     Write-Host "[13] Backup com Robocopy"
     Write-Host "[14] Exclusao forcada de pasta"
-    Write-Host "[15] Limpeza de registro (BleachBit/Glary)"
+    Write-Host "[15] Limpeza de registro (Glary Utilities)"
     Write-Host "[ S] Sair  |  [Q] Quit  |  [0] Zero para sair"
     Write-Host "=========================================" -ForegroundColor Magenta
 }

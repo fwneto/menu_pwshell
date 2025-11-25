@@ -7,15 +7,9 @@
 
 Clear-Host
 
-#region ASCII Banner
+#region Banner
 
-$Global:MW_Banner = @'
-__        ___                    _                       __  __       _                   _                 
-\ \      / (_)_ __  _ __   ___  | |_ ___    __ _ _ __   |  \/  | __ _(_)_ __   ___  _ __ | |_ ___  ___  ___ 
- \ \ /\ / /| | '_ \| '_ \ / _ \ | __/ _ \  / _` | '_ \  | |\/| |/ _` | | '_ \ / _ \| '_ \| __/ _ \/ __|/ _ \
-  \ V  V / | | | | | | | |  __/ | || (_) || (_| | | | | | |  | | (_| | | | | | (_) | | | | ||  __/\__ \  __/
-   \_/\_/  |_|_| |_|_| |_|\___|  \__\___/  \__,_|_| |_| |_|  |_|\__,_|_|_| |_|\___/|_| |_|\__\___||___/\___|
-'@
+$Global:MW_Banner = "Menu de Manutencao do Windows"
 
 #endregion
 
@@ -1419,9 +1413,10 @@ function Acao-10-LimpezaTemporarios {
 function Acao-15-LimpadorRegistro {
     Write-Info "Esta opcao instala e abre uma ferramenta confiavel para limpeza e manutencao."
     Write-Warn "Revise a analise proposta pela ferramenta antes de aplicar quaisquer correcoes."
-
+    
     $programFiles    = $env:ProgramFiles
     $programFilesX86 = ${env:ProgramFiles(x86)}
+    $localAppData    = $env:LOCALAPPDATA
 
     $ferramentas = @(
         [PSCustomObject]@{
@@ -1433,6 +1428,16 @@ function Acao-15-LimpadorRegistro {
             CaminhosDiretos = @(
                 if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'BleachBit\bleachbit.exe' }
                 if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'BleachBit\bleachbit.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\BleachBit\bleachbit.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\BleachBit\BleachBit.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'BleachBit\bleachbit.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'BleachBit\BleachBit.exe' }
+            )
+            PastasExtras    = @(
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'BleachBit' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'BleachBit' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\BleachBit' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'BleachBit' }
             )
         }
         [PSCustomObject]@{
@@ -1444,8 +1449,42 @@ function Acao-15-LimpadorRegistro {
             CaminhosDiretos = @(
                 if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\Integrator.exe' }
                 if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6\Integrator.exe' }
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities\Integrator.exe' }
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
                 if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\Integrator.exe' }
                 if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6\Integrator.exe' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities\Integrator.exe' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5\Integrator.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5\GlaryUtilities.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6\Integrator.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6\GlaryUtilities.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities\Integrator.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities\GlaryUtilities.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5\Integrator.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5\GlaryUtilities.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6\Integrator.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6\GlaryUtilities.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities\Integrator.exe' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities\GlaryUtilities.exe' }
+            )
+            PastasExtras    = @(
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 5' }
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities 6' }
+                if ($programFiles) { Join-Path -Path $programFiles -ChildPath 'Glary Utilities' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 5' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities 6' }
+                if ($programFilesX86) { Join-Path -Path $programFilesX86 -ChildPath 'Glary Utilities' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 5' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities 6' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Programs\Glary Utilities' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 5' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities 6' }
+                if ($localAppData) { Join-Path -Path $localAppData -ChildPath 'Glary Utilities' }
             )
         }
     )
@@ -1492,6 +1531,18 @@ function Acao-15-LimpadorRegistro {
         }
         foreach ($caminho in $tool.CaminhosDiretos) {
             if ($caminho -and (Test-Path -LiteralPath $caminho)) { return $caminho }
+        }
+        if ($tool.PastasExtras) {
+            foreach ($raiz in $tool.PastasExtras) {
+                if (-not $raiz) { continue }
+                if (-not (Test-Path -LiteralPath $raiz)) { continue }
+                foreach ($nome in $tool.Executaveis) {
+                    try {
+                        $found = Get-ChildItem -Path $raiz -Filter $nome -Recurse -File -ErrorAction SilentlyContinue | Select-Object -First 1
+                        if ($found) { return $found.FullName }
+                    } catch {}
+                }
+            }
         }
         return $null
     }
@@ -2002,10 +2053,10 @@ function Acao-0-InstalarDependencias {
 function Mostrar-SetupInicial {
     Clear-Host
     if ($Global:MW_Banner) {
-        Write-Host $Global:MW_Banner -ForegroundColor Magenta
+        Write-Host $Global:MW_Banner -ForegroundColor Green
         Write-Host ""
     }
-    Write-Host "====== PREPARACAO INICIAL ======" -ForegroundColor Magenta
+    Write-Host "====== PREPARACAO INICIAL ======" -ForegroundColor Green
     Write-Host "[ 1] Verificar/instalar dependencias"
     Write-Host "[ 2] Prosseguir para o menu principal"
     Write-Host "[ 0] Sair"
@@ -2036,10 +2087,10 @@ function Loop-SetupInicial {
 function Mostrar-Menu {
     Clear-Host
     if ($Global:MW_Banner) {
-        Write-Host $Global:MW_Banner -ForegroundColor Magenta
+        Write-Host $Global:MW_Banner -ForegroundColor Green
         Write-Host ""
     }
-    Write-Host "========== MENU DE MANUTENCAO ==========" -ForegroundColor Magenta
+    Write-Host "========== MENU DE MANUTENCAO ==========" -ForegroundColor Green
     Write-Host "[ 1] Verificar atualizacoes do Windows"
     Write-Host "[ 2] Instalar atualizacoes do Windows"
     Write-Host "[ 3] Winget: Atualizar aplicativos"

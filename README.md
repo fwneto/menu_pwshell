@@ -7,6 +7,7 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - Operações com `winget` para atualizar e desinstalar aplicativos com fluxos de fallback interativo.
 - Rotinas com Chocolatey para instalar kits recomendados, atualizar tudo ou remover pacotes específicos.
 - Limpeza segura de diretórios temporários do sistema e caches de navegadores em todos os perfis de usuário.
+- Gestão de Appx para reinstalar ou remover aplicativos do sistema (ex.: recuperar Xbox Gaming Bar removida por debloat).
 - Automação de tarefas administrativas: mapeamento de unidades de rede com cenários pré-configurados, remoção de perfis, debloat (Sycnex, Chris Titus WinUtil ou perfil customizado) e backup com Robocopy.
 - Acesso rápido ao Glary Utilities para limpeza de registro, com instalação, abertura e desinstalação guiadas.
 - Gravação automática de logs e transcripts sob a pasta `Logs` no diretório do script, incluindo arquivos `log_yyyyMMdd_HHmmss.txt` e, quando aplicável, `robocopy_yyyyMMdd_HHmmss.log`.
@@ -45,6 +46,25 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 13. Executar backup via Robocopy (origem/destino customizáveis).
 14. Forçar a exclusão de uma pasta específica após ajustar permissões.
 15. Gerenciar Glary Utilities para limpeza de registro (instalar/abrir ou desinstalar).
+16. Gerenciar Appx (instalar/reinstalar ou remover, incluindo Xbox Gaming Bar).
+
+### Detalhamento das opções do menu
+- `1` Verificar atualizações do Windows: consulta PSWindowsUpdate e lista pendências, sem instalar.
+- `2` Instalar atualizações do Windows: executa instalação via PSWindowsUpdate com reboot opcional.
+- `3` Winget: Atualizar aplicativos: roda `winget upgrade --all` com acordos aceitos e mostra status por pacote.
+- `4` Winget: Desinstalar aplicativos: busca pacotes (filtro ou lista completa), tenta desinstalação silenciosa e oferece modo interativo se falhar.
+- `5` Chocolatey: Instalar/Verificar: instala o Chocolatey se ausente e valida acesso ao repositório.
+- `6` Chocolatey: Instalar programas: instala um kit padrão de utilitários definido no script.
+- `7` Chocolatey: Atualizar tudo: executa `choco upgrade all -y --no-progress`.
+- `8` Chocolatey: Desinstalar pacote: solicita o id e roda `choco uninstall`.
+- `9` Mapear/Desmapear unidade: fluxo manual (letra/UNC/credenciais) ou presets INGEST/REDACAO/ILHA DE ALTA/LEILAO com mascaramento de senha e fallback Guest.
+- `10` Limpeza de temporários: remove arquivos em `%TEMP%`, caches de navegadores (todos os perfis), lixeira e outros diretórios comuns de lixo.
+- `11` Remover perfis de usuário: lista perfis não carregados e exclui os selecionados via CIM, preservando perfis especiais/ativos.
+- `12` Debloat do Windows: submenu com Sycnex, WinUtil Chris Titus ou perfil customizado de remoção/ajustes; agora inclui atalho para Gerenciar Appx.
+- `13` Backup com Robocopy: executa `/MIR` entre origem e destino informados, com log dedicado.
+- `14` Exclusão forçada de pasta: toma posse, ajusta ACL para Administradores e força a remoção recursiva.
+- `15` Limpeza de registro (Glary Utilities): instala/abre o Glary ou desinstala removendo pastas residuais conhecidas.
+- `16` Gerenciar Appx: reinstala por manifest ou winget (se houver ID) ou remove Appx e provisionamento; inclui atalho para Xbox Gaming Bar.
 
 ### Debloat do Windows
 - **Sycnex (Windows10Debloater)** – download automático com opção de execução silenciosa (`-Silent -SysPrep`) ou interface original para ajustes manuais.
@@ -62,6 +82,12 @@ Ferramenta em PowerShell para técnicos de campo executarem rotinas recorrentes 
 - Caso não esteja presente, instala via `winget` (com opção de atualizar fontes em caso de falha) e tenta Chocolatey como fallback.
 - Permite escolher entre instalar/abrir a interface ou desinstalar o Glary Utilities, limpando pastas residuais conhecidas após a remoção.
 - O operador segue com a limpeza direto na interface do Glary; recomenda-se criar pontos de restauração ou backups antes de ajustes agressivos.
+
+### Gerenciar Appx (Opção 16)
+- Permite reinstalar ou remover pacotes Appx por nome (ex.: `Microsoft.XboxGamingOverlay` para a Xbox Gaming Bar).
+- Traz atalhos para Xbox Gaming Bar e Microsoft Store; demais pacotes podem ser informados manualmente.
+- Tenta reinstalar primeiro re-registrando o `AppxManifest.xml` existente; se houver ID do `winget`, tenta instalação online como fallback.
+- A remoção usa `Remove-AppxPackage -AllUsers` e `Remove-AppxProvisionedPackage -Online` para limpar provisionamentos.
 
 ## Logs e auditoria
 - Cada execução cria um transcript em `.\Logs` (ao lado do `menu.ps1`) com data/hora no nome do arquivo.

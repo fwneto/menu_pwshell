@@ -1628,6 +1628,162 @@ function Acao-15-LimpadorRegistro {
     }
 }
 
+function Acao-16-GerenciarAppx {
+    Write-Info "Gerenciar aplicativos Appx (instalar/reinstalar ou remover)."
+    Write-Warn "Use para recuperar apps removidos pelo debloat (ex.: Xbox Gaming Bar) ou limpar um Appx especifico."
+
+    $apps = @(
+        [PSCustomObject]@{
+            Numero   = 1
+            Nome     = 'Xbox Gaming Bar'
+            AppxName = 'Microsoft.XboxGamingOverlay'
+            WingetId = 'Microsoft.XboxGamingOverlay'
+            Custom   = $false
+        }
+        [PSCustomObject]@{
+            Numero   = 2
+            Nome     = 'Microsoft Store'
+            AppxName = 'Microsoft.WindowsStore'
+            WingetId = $null
+            Custom   = $false
+        }
+        [PSCustomObject]@{
+            Numero   = 3
+            Nome     = 'Personalizado (informar nome do pacote)'
+            AppxName = $null
+            WingetId = $null
+            Custom   = $true
+        }
+    )
+
+    foreach ($app in $apps) {
+        Write-Host ("[{0}] {1}" -f $app.Numero, $app.Nome)
+    }
+    Write-Host "[0] Voltar"
+
+    $escolha = Read-Host "Escolha o aplicativo"
+    if ([string]::IsNullOrWhiteSpace($escolha) -or $escolha.Trim() -eq '0') {
+        Write-Info "Operacao cancelada."
+        Pause-Enter
+        return
+    }
+
+    if (-not ($escolha -match '^\d+$')) {
+        Write-Warn "Informe apenas o numero correspondente."
+        Pause-Enter
+        return
+    }
+
+    $appSelecionado = $apps | Where-Object { $_.Numero -eq [int]$escolha }
+    if (-not $appSelecionado) {
+        Write-Warn "Opcao invalida."
+        Pause-Enter
+        return
+    }
+
+    if ($appSelecionado.Custom) {
+        $nome = Read-Host "Informe o nome do pacote Appx (ex.: Microsoft.XboxGamingOverlay)"
+        if ([string]::IsNullOrWhiteSpace($nome)) {
+            Write-Warn "Nome do pacote nao informado."
+            Pause-Enter
+            return
+        }
+        $appSelecionado.AppxName = $nome.Trim()
+        $wingetCustom = Read-Host "Opcional: informe o ID no winget se quiser tentar reinstalar por ele (ENTER para ignorar)"
+        if (-not [string]::IsNullOrWhiteSpace($wingetCustom)) {
+            $appSelecionado.WingetId = $wingetCustom.Trim()
+        }
+    }
+
+    $acao = Read-Host "Escolha a acao: [1] Instalar/Reinstalar  [2] Remover  [0] Cancelar"
+    switch ($acao.Trim()) {
+        '0' { Write-Info "Operacao cancelada."; Pause-Enter; return }
+        '1' {
+            $manifestReinstalado = $false
+            try {
+                $pacotes = Get-AppxPackage -AllUsers -Name $appSelecionado.AppxName -ErrorAction SilentlyContinue
+                foreach ($pkg in $pacotes) {
+                    if ($pkg.InstallLocation -and (Test-Path -LiteralPath $pkg.InstallLocation)) {
+                        $manifest = Join-Path -Path $pkg.InstallLocation -ChildPath 'AppxManifest.xml'
+                        if (Test-Path -LiteralPath $manifest) {
+                            Write-Info ("Registrando novamente {0} via manifest local." -f $appSelecionado.AppxName)
+                            Add-AppxPackage -DisableDevelopmentMode -Register $manifest -ErrorAction SilentlyContinue
+                            $manifestReinstalado = $true
+                        }
+                    }
+                }
+            } catch {
+                Write-Warn ("Falha ao reinstalar via manifest: {0}" -f $_.Exception.Message)
+            }
+
+            $instalado = $false
+            try {
+                $check = Get-AppxPackage -AllUsers -Name $appSelecionado.AppxName -ErrorAction SilentlyContinue
+                $instalado = [bool]$check
+            } catch {}
+
+            if (-not $instalado -and $appSelecionado.WingetId -and (Ensure-Winget)) {
+                Write-Info ("Instalando {0} via winget..." -f $appSelecionado.Nome)
+                try {
+                    winget install --id $appSelecionado.WingetId -e --accept-package-agreements --accept-source-agreements
+                    $instalado = $true
+                } catch {
+                    Write-Warn ("Falha no winget: {0}" -f $_.Exception.Message)
+                    if (Prompt-YesNo "Tentar atualizar as fontes do winget (pode demorar)?" -DefaultYes) {
+                        try {
+                            winget source update
+                            winget install --id $appSelecionado.WingetId -e --accept-package-agreements --accept-source-agreements
+                            $instalado = $true
+                        } catch {
+                            Write-Warn ("Falha ao atualizar/instalar pelo winget: {0}" -f $_.Exception.Message)
+                        }
+                    }
+                }
+            }
+
+            if (-not $instalado) {
+                Write-Warn "Nao foi possivel instalar/reinstalar automaticamente. Verifique a disponibilidade na Microsoft Store ou um pacote offline."
+                Pause-Enter
+                return
+            }
+
+            Write-Ok ("{0} instalado ou re-registrado com sucesso." -f $appSelecionado.Nome)
+            Pause-Enter
+        }
+        '2' {
+            $removeu = $false
+            try {
+                Write-Info ("Removendo pacote {0} para todos os usuarios..." -f $appSelecionado.AppxName)
+                Get-AppxPackage -AllUsers -Name $appSelecionado.AppxName -ErrorAction SilentlyContinue | Remove-AppxPackage -AllUsers -ErrorAction SilentlyContinue
+                $removeu = $true
+            } catch {
+                Write-Warn ("Falha ao remover Appx: {0}" -f $_.Exception.Message)
+            }
+
+            try {
+                Write-Info "Removendo provisionamento (Offline)..."
+                Get-AppxProvisionedPackage -Online | Where-Object { $_.DisplayName -eq $appSelecionado.AppxName } | ForEach-Object {
+                    Remove-AppxProvisionedPackage -Online -PackageName $_.PackageName -ErrorAction SilentlyContinue
+                    $removeu = $true
+                }
+            } catch {
+                Write-Warn ("Falha ao remover provisionamento: {0}" -f $_.Exception.Message)
+            }
+
+            if ($removeu) {
+                Write-Ok ("{0} removido quando presente." -f $appSelecionado.Nome)
+            } else {
+                Write-Info "Nenhum pacote removido (pode nao estar instalado/provisionado)."
+            }
+            Pause-Enter
+        }
+        default {
+            Write-Warn "Informe apenas 1, 2 ou 0."
+            Pause-Enter
+        }
+    }
+}
+
 function Acao-11-RemoverPerfisUsuario {
     Write-Warn "ATENCAO: esta rotina remove perfis de usuario (pastas em C:\Users) que nao estejam carregados."
     try {
@@ -1962,6 +2118,7 @@ function Acao-12-DebloatWindows {
         Write-Host "[ 1] Windows10Debloater (Sycnex)"
         Write-Host "[ 2] WinUtil (Chris Titus) - personalizacao via GUI"
         Write-Host "[ 3] Debloat customizado (selecionar recursos)"
+        Write-Host "[ 4] Gerenciar Appx (reinstalar/remover - Xbox Gaming Bar etc.)"
         Write-Host "[ 0] Voltar"
         Write-Host "===================================" -ForegroundColor Magenta
 
@@ -1979,6 +2136,11 @@ function Acao-12-DebloatWindows {
             }
             '3' {
                 Invoke-WindowsDebloatCustom
+                Pause-Enter
+                return
+            }
+            '4' {
+                Acao-16-GerenciarAppx
                 Pause-Enter
                 return
             }
@@ -2121,6 +2283,7 @@ function Mostrar-Menu {
     Write-Host "[13] Backup com Robocopy"
     Write-Host "[14] Exclusao forcada de pasta"
     Write-Host "[15] Limpeza de registro (Glary Utilities)"
+    Write-Host "[16] Gerenciar Appx (instalar/remover)"
     Write-Host "[ S] Sair  |  [Q] Quit  |  [0] Zero para sair"
     Write-Host "=========================================" -ForegroundColor Magenta
 }
@@ -2145,6 +2308,7 @@ function Loop-Menu {
             '13' { Acao-13-BackupRobocopy }
             '14' { Acao-14-ExclusaoForcadaPasta }
             '15' { Acao-15-LimpadorRegistro }
+            '16' { Acao-16-GerenciarAppx }
             'S' { return }
             'Q' { return }
             '0' { return }

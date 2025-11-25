@@ -1,0 +1,152 @@
+﻿**********************
+Início da transcrição do Windows PowerShell
+Hora de início: 20251125165606
+Nome de Usuário: NWB-001\suporte
+Executar como Usuário: NWB-001\suporte
+Nome da Configuração: 
+Computador: NWB-001 (Microsoft Windows NT 10.0.26200.0)
+Aplicativo Host: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\dev2\menu_pwshell\menu.ps1
+ID do Processo: 32676
+PSVersion: 5.1.26100.7019
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7019
+BuildVersion: 10.0.26100.7019
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS>TerminatingError(Set-ExecutionPolicy): "O Windows PowerShell atualizou sua política de execução com êxito, mas a configuração foi substituída por uma política definida em um escopo mais específico. Devido à substituição, o shell manterá sua política de execução efetiva atual de Unrestricted. Digite "Get-ExecutionPolicy -List" para exibir suas configurações de política de execução. Para obter mais informações, consulte "Get-Help Set-ExecutionPolicy"."
+Menu de Manutencao do Windows
+
+====== PREPARACAO INICIAL ======
+[ 1] Verificar/instalar dependencias
+[ 2] Prosseguir para o menu principal
+[ 0] Sair
+================================
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+[..]  Gerenciar aplicativos Appx (instalar/reinstalar ou remover).
+[!]  Use para recuperar apps removidos pelo debloat (ex.: Xbox Gaming Bar) ou limpar um Appx especifico.
+[1] Xbox Gaming Bar
+[2] Microsoft Store
+[3] Personalizado (informar nome do pacote)
+[0] Voltar
+[..]  Registrando novamente Microsoft.XboxGamingOverlay via manifest local.
+[OK]  Xbox Gaming Bar instalado ou re-registrado com sucesso.
+
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+[..]  Gerenciar aplicativos Appx (instalar/reinstalar ou remover).
+[!]  Use para recuperar apps removidos pelo debloat (ex.: Xbox Gaming Bar) ou limpar um Appx especifico.
+[1] Xbox Gaming Bar
+[2] Microsoft Store
+[3] Personalizado (informar nome do pacote)
+[0] Voltar
+[..]  Removendo pacote Microsoft.XboxGamingOverlay para todos os usuarios...
+[..]  Removendo provisionamento (Offline)...
+[OK]  Xbox Gaming Bar removido quando presente.
+
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+[..]  Gerenciar aplicativos Appx (instalar/reinstalar ou remover).
+[!]  Use para recuperar apps removidos pelo debloat (ex.: Xbox Gaming Bar) ou limpar um Appx especifico.
+[1] Xbox Gaming Bar
+[2] Microsoft Store
+[3] Personalizado (informar nome do pacote)
+[0] Voltar
+[..]  Instalando Xbox Gaming Bar via winget...
+Nenhum pacote encontrou os critérios de entrada correspondentes.
+[OK]  Xbox Gaming Bar instalado ou re-registrado com sucesso.
+
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+[..]  Esta opcao permite instalar, abrir ou desinstalar o Glary Utilities.
+[!]  Revise a analise proposta pela ferramenta antes de aplicar quaisquer correcoes.
+[1] Instalar/abrir Glary Utilities
+[2] Desinstalar Glary Utilities
+[0] Voltar
+[..]  Desinstalando Glary Utilities via winget...
+Encontrado Glary Utilities 6.34 [Glarysoft.GlaryUtilities]
+Iniciando a desinstalação do pacote...
+Desinstalado com êxito
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Program Files (x86)\Glary Utilities\skins\default\main\shadow_border.png: O processo não pode acessar o arquivo 'shadow_border.png' porque ele está sendo usado por outro processo."
+[!]  Falha ao remover C:\Program Files (x86)\Glary Utilities: O processo não pode acessar o arquivo 'shadow_border.png' porque ele está sendo usado por outro processo.
+[OK]  Glary Utilities desinstalado.
+

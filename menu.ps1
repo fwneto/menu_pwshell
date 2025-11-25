@@ -1,9 +1,4 @@
-# Script de menu de manutencao do Windows
 #requires -version 5.1
-<#
-.SYNOPSIS
-    Menu de Manutencao do Windows - Instalador e Atualizador de Aplicativos
-#>
 
 Clear-Host
 

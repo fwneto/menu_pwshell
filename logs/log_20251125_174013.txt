@@ -1,0 +1,30 @@
+﻿**********************
+Início da transcrição do Windows PowerShell
+Hora de início: 20251125174013
+Nome de Usuário: NWB-001\suporte
+Executar como Usuário: NWB-001\suporte
+Nome da Configuração: 
+Computador: NWB-001 (Microsoft Windows NT 10.0.26200.0)
+Aplicativo Host: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\dev2\menu_pwshell\menu.ps1
+ID do Processo: 31268
+PSVersion: 5.1.26100.7019
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7019
+BuildVersion: 10.0.26100.7019
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS>TerminatingError(Set-ExecutionPolicy): "O Windows PowerShell atualizou sua política de execução com êxito, mas a configuração foi substituída por uma política definida em um escopo mais específico. Devido à substituição, o shell manterá sua política de execução efetiva atual de Unrestricted. Digite "Get-ExecutionPolicy -List" para exibir suas configurações de política de execução. Para obter mais informações, consulte "Get-Help Set-ExecutionPolicy"."
+Menu de Manutencao do Windows
+
+====== PREPARACAO INICIAL ======
+[ 1] Verificar/instalar dependencias
+[ 2] Prosseguir para o menu principal
+[ 0] Sair
+================================
+**********************
+Fim da transcrição do Windows PowerShell
+Hora de término: 20251125174018
+**********************

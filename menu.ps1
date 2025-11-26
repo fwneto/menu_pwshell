@@ -154,6 +154,21 @@ function Clear-DirectoryContents {
         [string]$Source
     )
 
+    # Helper para agendar exclusao no reboot (MoveFileEx com MOVEFILE_DELAY_UNTIL_REBOOT)
+    if (-not ("Kernel32.MoveFileExWrapper" -as [type])) {
+        Add-Type -Namespace Kernel32 -Name MoveFileExWrapper -MemberDefinition @"
+        [System.Runtime.InteropServices.DllImport("kernel32.dll", SetLastError = true, CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
+        public static extern bool MoveFileEx(string lpExistingFileName, string lpNewFileName, int dwFlags);
+"@
+    }
+    $registerPendingDelete = {
+        param($targetPath)
+        if (-not $targetPath) { return }
+        try {
+            [Kernel32.MoveFileExWrapper]::MoveFileEx($targetPath, $null, 0x4) | Out-Null
+        } catch {}
+    }
+
     if (-not (Test-Path -LiteralPath $Path)) {
         return 0
     }
@@ -220,6 +235,7 @@ function Clear-DirectoryContents {
                     }
                 } catch {
                     Write-Warn ("Nao foi possivel remover {0}: {1}" -f $child.FullName, $_.Exception.Message)
+                    & $registerPendingDelete $child.FullName
                 }
             } else {
                 $fileSize = 0L
@@ -246,6 +262,7 @@ function Clear-DirectoryContents {
                     }
                 } catch {
                     Write-Warn ("Nao foi possivel remover {0}: {1}" -f $child.FullName, $_.Exception.Message)
+                    & $registerPendingDelete $child.FullName
                 }
             }
         }
@@ -1086,6 +1103,100 @@ function Acao-10-LimpezaTemporarios {
 
     $logEntries = [System.Collections.Generic.List[object]]::new()
     $totalFreed = 0L
+    $aggressive = Prompt-YesNo "Habilitar modo agressivo? (desabilitar servicos Adobe/CC antes da limpeza)" -DefaultYes
+
+    # Encerra aplicativos comuns que bloqueiam temporarios/cache (browsers e Adobe).
+    $processKillList = @(
+        # Navegadores
+        'chrome','msedge','brave','opera','opera_crashreporter','firefox','firefoxdeveloperedition',
+        # Adobe/Creative Cloud
+        'Creative Cloud','CCLibrary','CCXProcess','AdobeIPCBroker','AdobeDesktopService','AdobeCrashDaemon',
+        'Acrobat','AcroTray','AfterFX','Adobe Media Encoder','DynamicLinkManager','Illustrator','Photoshop',
+        'AdobeNotificationClient','CoreSync','NGL','NGLClient','AdobeCollabSync','Adobe CEF Helper','AcroCEF',
+        'AdobeCollabSyncHelper','Creative Cloud Helper','AdobeSpacesHelper','AdobeCrashHandler','AdobeGCClient',
+        'adb' # Android platform tools log em uso
+    )
+    $serviceKillList = @(
+        'AdobeUpdateService','AGMService','AGSService','AdobeARMservice','Adobe Acrobat Update Service',
+        'Adobe Genuine Software Integrity Service','AdobeGenuineMonitorService','AdobeGCClient'
+    )
+
+    $serviceState = @()
+    if ($aggressive) {
+        foreach ($svc in $serviceKillList) {
+            try {
+                $obj = Get-Service -Name $svc -ErrorAction SilentlyContinue
+                if ($obj) {
+                    $serviceState += [PSCustomObject]@{
+                        Name      = $obj.Name
+                        StartType = $obj.StartType
+                    }
+                    try { Set-Service -Name $obj.Name -StartupType Disabled -ErrorAction SilentlyContinue } catch {}
+                    try { Stop-Service -Name $obj.Name -Force -ErrorAction SilentlyContinue } catch {}
+                }
+            } catch {}
+        }
+    }
+    try {
+        $procs = Get-Process -Name $processKillList -ErrorAction SilentlyContinue
+        if ($procs) {
+            Write-Warn "Encerrando processos que podem bloquear a limpeza (navegadores/Adobe)..."
+            $procs | Stop-Process -Force -ErrorAction SilentlyContinue
+        }
+    } catch {
+        Write-Warn ("Falha ao encerrar processos bloqueadores: {0}" -f $_.Exception.Message)
+    }
+    # Fallback adicional com taskkill para garantir encerramento de helper/renderer (silenciado)
+    $taskkillList = @(
+        'Creative Cloud.exe','CCLibrary.exe','CCXProcess.exe','AdobeIPCBroker.exe','AdobeDesktopService.exe',
+        'AdobeNotificationClient.exe','Adobe CEF Helper.exe','AcroCEF.exe','AdobeCollabSync.exe',
+        'AdobeCollabSyncHelper.exe','CoreSync.exe','AdobeCrashDaemon.exe','AdobeCrashHandler.exe','AdobeGCClient.exe',
+        'Acrobat.exe','AcroTray.exe','Adobe Media Encoder.exe','AfterFX.exe','DynamicLinkManager.exe',
+        'Illustrator.exe','Photoshop.exe','adb.exe'
+    )
+    foreach ($tk in $taskkillList) {
+        try {
+            Start-Process -FilePath "cmd.exe" -ArgumentList "/c taskkill /F /T /IM `"$tk`" > nul 2>&1" -NoNewWindow -Wait -ErrorAction SilentlyContinue
+        } catch {}
+    }
+
+    # Helper para desmontar VHDX que fiquem presos em temp (ex.: swap.vhdx)
+    $tryDismountVhdx = {
+        param($paths)
+        foreach ($dir in $paths) {
+            if (-not $dir) { continue }
+            try {
+                $vhdxs = Get-ChildItem -LiteralPath $dir -Filter *.vhdx -File -ErrorAction SilentlyContinue
+            } catch {
+                $vhdxs = @()
+            }
+            foreach ($v in $vhdxs) {
+                try {
+                    Dismount-DiskImage -ImagePath $v.FullName -ErrorAction SilentlyContinue
+                } catch {}
+            }
+        }
+    }
+
+    try {
+        foreach ($svc in $serviceKillList) {
+            Stop-Service -Name $svc -Force -ErrorAction SilentlyContinue
+        }
+    } catch {
+        Write-Warn ("Falha ao parar servicos bloqueadores: {0}" -f $_.Exception.Message)
+    }
+
+    $restoreServices = {
+        param($states)
+        foreach ($entry in $states) {
+            try {
+                Set-Service -Name $entry.Name -StartupType $entry.StartType -ErrorAction SilentlyContinue
+                if ($entry.StartType -ne 'Disabled') {
+                    Start-Service -Name $entry.Name -ErrorAction SilentlyContinue
+                }
+            } catch {}
+        }
+    }
 
     $systemTempTargets = @(
         $env:TEMP
@@ -1149,6 +1260,7 @@ function Acao-10-LimpezaTemporarios {
             Action = {
                 param($ctx, $logList)
                 $freed = 0L
+                & $tryDismountVhdx $systemTempTargets
                 foreach ($target in $systemTempTargets) {
                     $freed += Clear-DirectoryContents -Path $target -Report $logList -Source $ctx.Label
                 }
@@ -1214,6 +1326,9 @@ function Acao-10-LimpezaTemporarios {
                     Write-Info ("Perfil: {0}" -f $userDir.Name)
                     foreach ($target in $userTempTargets) {
                         $path = Join-Path -Path $userDir.FullName -ChildPath $target
+                        if ($target -like '*AppData\\Local\\Temp*') {
+                            & $tryDismountVhdx @($path)
+                        }
                         $freed += Clear-DirectoryContents -Path $path -Report $logList -Source $ctx.Label
                     }
                 }
@@ -1380,6 +1495,10 @@ function Acao-10-LimpezaTemporarios {
         } catch {
             Write-Err ("Falha ao executar {0}: {1}" -f $action.Label, $_.Exception.Message)
         }
+    }
+
+    if ($aggressive -and $serviceState) {
+        & $restoreServices $serviceState
     }
 
     $formattedTotal = Format-Bytes $totalFreed

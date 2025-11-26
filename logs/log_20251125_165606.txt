@@ -150,3 +150,28 @@ PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variá
 [!]  Falha ao remover C:\Program Files (x86)\Glary Utilities: O processo não pode acessar o arquivo 'shadow_border.png' porque ele está sendo usado por outro processo.
 [OK]  Glary Utilities desinstalado.
 
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+**********************
+Fim da transcrição do Windows PowerShell
+Hora de término: 20251125173827
+**********************

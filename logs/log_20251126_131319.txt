@@ -1,0 +1,298 @@
+﻿**********************
+Início da transcrição do Windows PowerShell
+Hora de início: 20251126131319
+Nome de Usuário: NWB-001\suporte
+Executar como Usuário: NWB-001\suporte
+Nome da Configuração: 
+Computador: NWB-001 (Microsoft Windows NT 10.0.26200.0)
+Aplicativo Host: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\dev2\menu_pwshell2\menu_pwshell\menu.ps1
+ID do Processo: 9800
+PSVersion: 5.1.26100.7019
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7019
+BuildVersion: 10.0.26100.7019
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS>TerminatingError(Set-ExecutionPolicy): "O Windows PowerShell atualizou sua política de execução com êxito, mas a configuração foi substituída por uma política definida em um escopo mais específico. Devido à substituição, o shell manterá sua política de execução efetiva atual de Unrestricted. Digite "Get-ExecutionPolicy -List" para exibir suas configurações de política de execução. Para obter mais informações, consulte "Get-Help Set-ExecutionPolicy"."
+Menu de Manutencao do Windows
+
+====== PREPARACAO INICIAL ======
+[ 1] Verificar/instalar dependencias
+[ 2] Prosseguir para o menu principal
+[ 0] Sair
+================================
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+[..]  Selecione os itens que deseja limpar:
+[..]  Diagnostico: processos que seriam encerrados: chrome(6008), chrome(8904), chrome(10100), chrome(12200), chrome(14924), chrome(16268), chrome(18836), chrome(18852), chrome(19328), chrome(19720), chrome(20924), comet(3108), comet(5700), comet(5892), comet(6268), comet(6280), comet(7648), comet(10576), comet(10872), comet(11104), comet(11412), comet(12540), comet(12676), comet(12748), comet(13808), comet(14180), comet(14368), comet(15240), comet(19268), comet(19564), comet(22160), msedgewebview2(3524), msedgewebview2(3752), msedgewebview2(4028), msedgewebview2(4404), msedgewebview2(6264), msedgewebview2(6516), msedgewebview2(6972), msedgewebview2(11400), msedgewebview2(11876), msedgewebview2(12116), msedgewebview2(12560), msedgewebview2(12872), msedgewebview2(12888), msedgewebview2(14340), msedgewebview2(15496), msedgewebview2(15916), msedgewebview2(15960), msedgewebview2(16836), msedgewebview2(18036)
+[..]  Nenhum navegador comum detectado; tentarei limpar quando pastas existirem.
+[1] Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)
+[2] Prefetch do Windows
+[3] Cache de atualizacoes (SoftwareDistribution\Download)
+[4] Pastas temporarias basicas dos usuarios
+[5] Caches de navegadores (auto: Chrome, Edge, Firefox, Brave, Opera, Comet, Vivaldi, Dragon)
+[6] Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)
+[7] Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)
+[..]  Executando: Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)
+[..]  Limpando: C:\Users\suporte\AppData\Local\Temp
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp' porque ele está sendo usado por outro processo.
+[..]  Limpando: C:\WINDOWS\Temp
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Prefetch do Windows
+[..]  Limpando: C:\WINDOWS\Prefetch
+[..]  Espaco liberado nesta etapa: 591,60 KB
+[..]  Executando: Cache de atualizacoes (SoftwareDistribution\Download)
+[..]  Limpando: C:\WINDOWS\SoftwareDistribution\Download
+AVISO: Aguardando que o serviço 'Serviço de Transferência Inteligente em Segundo Plano (bits)' seja iniciado...
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Pastas temporarias basicas dos usuarios
+[..]  Perfil: gabriel
+[..]  Limpando: C:\Users\gabriel\AppData\Local\Temp
+[..]  Limpando: C:\Users\gabriel\AppData\Local\Microsoft\Windows\INetCache
+[..]  Limpando: C:\Users\gabriel\AppData\LocalLow\Microsoft\CryptnetUrlCache
+[..]  Perfil: suporte
+[..]  Limpando: C:\Users\suporte\AppData\Local\Temp
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0b0f6ee2-db43-4f92-8a86-014ee1687d15.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0fd8ba37-b141-4b21-b4d2-d37fa143ed5a.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\1525c3a1-7c54-49b0-94cb-942f8b94cb53.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\395d38c1-991b-4f33-a85e-799cc47ddf6f.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3f2569f4-e998-4e64-af9e-8c2fc3859290.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\4062af52-bd0b-40d3-aa3c-bed0fbdc61fb.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\471f6811-7941-4025-92b3-d2f086164159.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\5f4a3cfb-6a5a-408a-a884-35a4adf11b70.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\5f4a3cfb-6a5a-408a-a884-35a4adf11b70.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\5f4a3cfb-6a5a-408a-a884-35a4adf11b70.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\5f4a3cfb-6a5a-408a-a884-35a4adf11b70.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\63eccf6a-10f9-4780-9221-0dc00e5a7b37.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\6653b52d-32fc-464f-966a-b149e0f49016.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7c7287ed-6779-4220-96a0-765d55aa0b10.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\7ef086fc-f902-43b7-90a5-6e0856c9b6fc.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8a9906e2-8f58-4664-8854-664d1a4d3ca1.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\9427b660-7d4d-42c1-a400-f71907cd1644.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\b0c9c51e-ddb4-419a-adbd-f093edf286bf.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\dd470ef8-28fc-4e06-8813-ce749d209d1e.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ea7280c5-d820-4a0c-8997-2a0d82b7ae5f.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\faf8902a-53fd-4573-9b23-bb1e1b469f8c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\faf8902a-53fd-4573-9b23-bb1e1b469f8c.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\faf8902a-53fd-4573-9b23-bb1e1b469f8c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\faf8902a-53fd-4573-9b23-bb1e1b469f8c.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\fddbe899-c419-4af9-bf66-e06535670297.tmp' porque ele está sendo usado por outro processo.
+[..]  Limpando: C:\Users\suporte\AppData\Local\Microsoft\Windows\INetCache
+[..]  Limpando: C:\Users\suporte\AppData\LocalLow\Microsoft\CryptnetUrlCache
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Caches de navegadores (auto: Chrome, Edge, Firefox, Brave, Opera, Comet, Vivaldi, Dragon)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Media Cache
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Media Cache Files
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Peak Files
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Nenhum item removido nesta etapa.
+[OK]  Limpeza concluida. Total liberado: 591,60 KB
+[..]  Log detalhado salvo em: C:\dev2\menu_pwshell2\menu_pwshell\Logs\limpeza_temporarios_20251126_131339.csv
+
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+[..]  Selecione os itens que deseja limpar:
+[!]  Encerrando processos que podem bloquear a limpeza (navegadores/Adobe)...
+[..]  Nenhum navegador comum detectado; tentarei limpar quando pastas existirem.
+[1] Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)
+[2] Prefetch do Windows
+[3] Cache de atualizacoes (SoftwareDistribution\Download)
+[4] Pastas temporarias basicas dos usuarios
+[5] Caches de navegadores (auto: Chrome, Edge, Firefox, Brave, Opera, Comet, Vivaldi, Dragon)
+[6] Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)
+[7] Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)
+[..]  Executando: Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)
+[..]  Limpando: C:\Users\suporte\AppData\Local\Temp
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo.
+[..]  Limpando: C:\WINDOWS\Temp
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Prefetch do Windows
+[..]  Limpando: C:\WINDOWS\Prefetch
+[..]  Espaco liberado nesta etapa: 136,30 KB
+[..]  Executando: Cache de atualizacoes (SoftwareDistribution\Download)
+[..]  Limpando: C:\WINDOWS\SoftwareDistribution\Download
+AVISO: Aguardando que o serviço 'Serviço de Transferência Inteligente em Segundo Plano (bits)' seja iniciado...
+AVISO: Aguardando que o serviço 'Serviço de Transferência Inteligente em Segundo Plano (bits)' seja iniciado...
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Pastas temporarias basicas dos usuarios
+[..]  Perfil: gabriel
+[..]  Limpando: C:\Users\gabriel\AppData\Local\Temp
+[..]  Limpando: C:\Users\gabriel\AppData\Local\Microsoft\Windows\INetCache
+[..]  Limpando: C:\Users\gabriel\AppData\LocalLow\Microsoft\CryptnetUrlCache
+[..]  Perfil: suporte
+[..]  Limpando: C:\Users\suporte\AppData\Local\Temp
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\3e38a2ed-7560-432e-a7c1-e9dce0797f4c.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\5624cf87-ceaf-446f-8015-2a3b8e244928.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\5624cf87-ceaf-446f-8015-2a3b8e244928.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\5624cf87-ceaf-446f-8015-2a3b8e244928.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\5624cf87-ceaf-446f-8015-2a3b8e244928.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\8f1b2a75-0af0-4fb9-99ed-d56f7e9a691b.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8f1b2a75-0af0-4fb9-99ed-d56f7e9a691b.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\8f1b2a75-0af0-4fb9-99ed-d56f7e9a691b.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8f1b2a75-0af0-4fb9-99ed-d56f7e9a691b.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\8fb8a565-4050-461a-abc2-5dc0da8c423b.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8fb8a565-4050-461a-abc2-5dc0da8c423b.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\8fb8a565-4050-461a-abc2-5dc0da8c423b.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\8fb8a565-4050-461a-abc2-5dc0da8c423b.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo.
+[..]  Limpando: C:\Users\suporte\AppData\Local\Microsoft\Windows\INetCache
+[..]  Limpando: C:\Users\suporte\AppData\LocalLow\Microsoft\CryptnetUrlCache
+[..]  Espaco liberado nesta etapa: 4,09 KB
+[..]  Executando: Caches de navegadores (auto: Chrome, Edge, Firefox, Brave, Opera, Comet, Vivaldi, Dragon)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Media Cache
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Media Cache Files
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Peak Files
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Nenhum item removido nesta etapa.
+[OK]  Limpeza concluida. Total liberado: 140,39 KB
+[..]  Log detalhado salvo em: C:\dev2\menu_pwshell2\menu_pwshell\Logs\limpeza_temporarios_20251126_131402.csv
+
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+**********************
+Fim da transcrição do Windows PowerShell
+Hora de término: 20251126132934
+**********************

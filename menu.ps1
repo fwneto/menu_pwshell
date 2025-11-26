@@ -63,6 +63,10 @@ function Invoke-CmdCommand {
     $shown = if ($Display) { $Display } else { $Command }
     if ($MaskPassword) {
         $shown = $shown -replace '(?i)(/pass:)\S+', '$1(oculto)'
+        $shown = $shown -replace '(?i)(--password(?:=|:|\s))\S+', '$1(oculto)'
+        if ($shown -match '(?i)^\s*net\s+use\s+') {
+            $shown = $shown -replace '(?i)(\s/user:[^\s]+)\s+\S+', '$1 (senha oculta)'
+        }
     }
 
     Write-Info $shown
@@ -999,10 +1003,9 @@ function Acao-9-MapearDesmapearUnidade {
                 if ([string]::IsNullOrWhiteSpace($path)) { Write-Warn "Caminho invalido."; return }
 
                 $user  = Read-Host "Usuario (ENTER para atual)"
-                $pass  = if ($user) { Read-Host "Senha" } else { $null }
+                $secure = if ($user) { Read-Host "Senha" -AsSecureString } else { $null }
                 try {
                     if ($user) {
-                        $secure = ConvertTo-SecureString $pass -AsPlainText -Force
                         $cred   = New-Object System.Management.Automation.PSCredential($user, $secure)
                         New-PSDrive -Name $letra.TrimEnd(':') -PSProvider FileSystem -Root $path -Persist -Credential $cred | Out-Null
                     } else {
@@ -1104,11 +1107,14 @@ function Acao-10-LimpezaTemporarios {
     $logEntries = [System.Collections.Generic.List[object]]::new()
     $totalFreed = 0L
     $aggressive = Prompt-YesNo "Habilitar modo agressivo? (desabilitar servicos Adobe/CC antes da limpeza)" -DefaultYes
+    $diagnosticKillOnly = Prompt-YesNo "Ativar modo diagnostico de encerramento? (apenas listar, nao encerrar)"
 
     # Encerra aplicativos comuns que bloqueiam temporarios/cache (browsers e Adobe).
     $processKillList = @(
         # Navegadores
-        'chrome','msedge','brave','opera','opera_crashreporter','firefox','firefoxdeveloperedition',
+        'chrome','msedge','msedgewebview2','brave','opera','opera_crashreporter','firefox','firefoxdeveloperedition','vivaldi','dragon','comet','CometBrowser',
+        # Sincronizadores/comuns
+        'OneDrive','Teams',
         # Adobe/Creative Cloud
         'Creative Cloud','CCLibrary','CCXProcess','AdobeIPCBroker','AdobeDesktopService','AdobeCrashDaemon',
         'Acrobat','AcroTray','AfterFX','Adobe Media Encoder','DynamicLinkManager','Illustrator','Photoshop',
@@ -1137,11 +1143,39 @@ function Acao-10-LimpezaTemporarios {
             } catch {}
         }
     }
+    $ancestorPids = @()
     try {
-        $procs = Get-Process -Name $processKillList -ErrorAction SilentlyContinue
+        $protected = @('powershell','pwsh','conhost','cmd','windowsterminal','wt','code')
+        $currentPid = $PID
+        $getAncestors = {
+            param([int]$seedPid)
+            $anc = New-Object System.Collections.Generic.List[System.Int32]
+            try {
+                $map = @{}
+                $procs = Get-CimInstance Win32_Process | Select-Object ProcessId, ParentProcessId
+                foreach ($p in $procs) { $map[[int]$p.ProcessId] = [int]$p.ParentProcessId }
+                $cur = $seedPid
+                for ($i=0; $i -lt 50; $i++) {
+                    if (-not $map.ContainsKey($cur)) { break }
+                    $pp = [int]$map[$cur]
+                    if ($pp -le 0) { break }
+                    $anc.Add($pp)
+                    $cur = $pp
+                }
+            } catch {}
+            return $anc.ToArray()
+        }
+        $ancestorPids = & $getAncestors $currentPid
+        $procs = Get-Process -Name $processKillList -ErrorAction SilentlyContinue | Where-Object {
+            $_ -and $_.ProcessName -and ($protected -notcontains $_.ProcessName.ToLowerInvariant()) -and $_.Id -ne $currentPid -and ($ancestorPids -notcontains $_.Id)
+        }
         if ($procs) {
-            Write-Warn "Encerrando processos que podem bloquear a limpeza (navegadores/Adobe)..."
-            $procs | Stop-Process -Force -ErrorAction SilentlyContinue
+            if ($diagnosticKillOnly) {
+                Write-Info ("Diagnostico: processos que seriam encerrados: {0}" -f (($procs | ForEach-Object { "$( $_.ProcessName)($( $_.Id))" }) -join ', '))
+            } else {
+                Write-Warn "Encerrando processos que podem bloquear a limpeza (navegadores/Adobe)..."
+                $procs | Stop-Process -Force -ErrorAction SilentlyContinue
+            }
         }
     } catch {
         Write-Warn ("Falha ao encerrar processos bloqueadores: {0}" -f $_.Exception.Message)
@@ -1152,13 +1186,23 @@ function Acao-10-LimpezaTemporarios {
         'AdobeNotificationClient.exe','Adobe CEF Helper.exe','AcroCEF.exe','AdobeCollabSync.exe',
         'AdobeCollabSyncHelper.exe','CoreSync.exe','AdobeCrashDaemon.exe','AdobeCrashHandler.exe','AdobeGCClient.exe',
         'Acrobat.exe','AcroTray.exe','Adobe Media Encoder.exe','AfterFX.exe','DynamicLinkManager.exe',
-        'Illustrator.exe','Photoshop.exe','adb.exe'
+        'Illustrator.exe','Photoshop.exe','CometBrowser.exe','Vivaldi.exe','dragon.exe','msedgewebview2.exe','OneDrive.exe','Teams.exe','adb.exe'
     )
-    foreach ($tk in $taskkillList) {
-        try {
-            Start-Process -FilePath "cmd.exe" -ArgumentList "/c taskkill /F /T /IM `"$tk`" > nul 2>&1" -NoNewWindow -Wait -ErrorAction SilentlyContinue
-        } catch {}
-    }
+    try {
+        $protectedExe = @('powershell.exe','pwsh.exe','cmd.exe','conhost.exe','windowsterminal.exe','wt.exe','openconsole.exe')
+        $tkTargets = Get-Process -Name $taskkillList -ErrorAction SilentlyContinue | Where-Object {
+            $_ -and $_.ProcessName -and ($protectedExe -notcontains ($_.ProcessName.ToLowerInvariant() + '.exe')) -and $_.Id -ne $PID -and ($ancestorPids -notcontains $_.Id)
+        }
+        if ($tkTargets) {
+            if ($diagnosticKillOnly) {
+                Write-Info ("Diagnostico: taskkill por PID (T): {0}" -f (($tkTargets | ForEach-Object { $_.Id }) -join ', '))
+            } else {
+                foreach ($p in $tkTargets) {
+                    Start-Process -FilePath "cmd.exe" -ArgumentList "/c taskkill /F /PID $($p.Id) /T > nul 2>&1" -NoNewWindow -Wait -ErrorAction SilentlyContinue
+                }
+            }
+        }
+    } catch {}
 
     # Helper para desmontar VHDX que fiquem presos em temp (ex.: swap.vhdx)
     $tryDismountVhdx = {
@@ -1202,7 +1246,7 @@ function Acao-10-LimpezaTemporarios {
         $env:TEMP
         $env:TMP
         (Join-Path -Path $env:WINDIR -ChildPath 'Temp')
-    )
+    ) | Where-Object { $_ } | Select-Object -Unique
 
     $prefetchPath = Join-Path -Path $env:SystemRoot -ChildPath 'Prefetch'
     $softwareDistributionPath = Join-Path -Path $env:SystemRoot -ChildPath 'SoftwareDistribution\Download'
@@ -1220,21 +1264,129 @@ function Acao-10-LimpezaTemporarios {
         'AppData\LocalLow\Microsoft\CryptnetUrlCache'
     )
 
-    $browserPatterns = @(
-        'AppData\Local\Google\Chrome\User Data\*\Cache',
-        'AppData\Local\Google\Chrome\User Data\*\Code Cache',
-        'AppData\Local\Google\Chrome\User Data\*\GPUCache',
-        'AppData\Local\Google\Chrome\User Data\*\Service Worker\CacheStorage',
-        'AppData\Local\Microsoft\Edge\User Data\*\Cache',
-        'AppData\Local\Microsoft\Edge\User Data\*\Code Cache',
-        'AppData\Local\Microsoft\Edge\User Data\*\GPUCache',
-        'AppData\Local\Microsoft\Edge\User Data\*\Service Worker\CacheStorage',
-        'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Cache',
-        'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Code Cache',
-        'AppData\Local\Opera Software\Opera Stable\Cache',
-        'AppData\Local\Mozilla\Firefox\Profiles\*\cache2',
-        'AppData\Local\Mozilla\Firefox\Profiles\*\startupCache'
-    )
+    $detectBrowsers = {
+        $names = @()
+        $add = { param([string]$n) if ($n -and ($names -notcontains $n)) { $names += $n } }
+        $regKeys = @('HKLM:\SOFTWARE\Clients\StartMenuInternet','HKLM:\SOFTWARE\WOW6432Node\Clients\StartMenuInternet')
+        foreach ($rk in $regKeys) {
+            try {
+                $subs = Get-ChildItem -Path $rk -ErrorAction SilentlyContinue
+                foreach ($s in $subs) {
+                    $lower = ($s.PSChildName).ToLowerInvariant()
+                    if ($lower -match 'chrome')  { & $add 'Chrome' }
+                    if ($lower -match 'edge')    { & $add 'Edge' }
+                    if ($lower -match 'firefox') { & $add 'Firefox' }
+                    if ($lower -match 'brave')   { & $add 'Brave' }
+                    if ($lower -match 'opera')   { & $add 'Opera' }
+                    if ($lower -match 'vivaldi') { & $add 'Vivaldi' }
+                    if ($lower -match 'dragon')  { & $add 'Dragon' }
+                    if ($lower -match 'comet')   { & $add 'Comet' }
+                }
+            } catch {}
+        }
+        $appPathsRoots = @(
+            'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths',
+            'HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths',
+            'HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths'
+        )
+        $exeMap = @{ 
+            'chrome.exe'       = 'Chrome'
+            'msedge.exe'       = 'Edge'
+            'microsoftedge.exe'= 'Edge'
+            'firefox.exe'      = 'Firefox'
+            'brave.exe'        = 'Brave'
+            'opera.exe'        = 'Opera'
+            'vivaldi.exe'      = 'Vivaldi'
+            'dragon.exe'       = 'Dragon'
+            'cometbrowser.exe' = 'Comet'
+            'comet.exe'        = 'Comet'
+        }
+        foreach ($root in $appPathsRoots) {
+            try {
+                $keys = Get-ChildItem -Path $root -ErrorAction SilentlyContinue
+                foreach ($k in $keys) {
+                    $key = ($k.PSChildName).ToLowerInvariant()
+                    $mapped = $exeMap[$key]
+                    if ($mapped) { & $add $mapped }
+                }
+            } catch {}
+        }
+        $usersRoot = 'C:\Users'
+        try { $userDirs = Get-ChildItem -Path $usersRoot -Directory -ErrorAction SilentlyContinue } catch { $userDirs = @() }
+        foreach ($user in $userDirs) {
+            $base = $user.FullName
+            if (Test-Path (Join-Path $base 'AppData\Local\Google\Chrome')) { & $add 'Chrome' }
+            try { if (Get-ChildItem -Path (Join-Path $base 'AppData\Local\Microsoft') -Directory -Filter 'Edge*' -ErrorAction SilentlyContinue) { & $add 'Edge' } } catch {}
+            if (Test-Path (Join-Path $base 'AppData\Local\Mozilla\Firefox\Profiles')) { & $add 'Firefox' }
+            if (Test-Path (Join-Path $base 'AppData\Local\BraveSoftware\Brave-Browser\User Data')) { & $add 'Brave' }
+            if (Test-Path (Join-Path $base 'AppData\Local\Opera Software')) { & $add 'Opera' }
+            if (Test-Path (Join-Path $base 'AppData\Local\Vivaldi\User Data')) { & $add 'Vivaldi' }
+            if (Test-Path (Join-Path $base 'AppData\Local\Comodo\Dragon\User Data')) { & $add 'Dragon' }
+            if (Test-Path (Join-Path $base 'AppData\Local\CometBrowser\User Data')) { & $add 'Comet' }
+        }
+        return $names
+    }
+    $installedBrowsers = & $detectBrowsers
+    if ($installedBrowsers -and $installedBrowsers.Count -gt 0) {
+        Write-Info ("Navegadores detectados: {0}" -f ($installedBrowsers -join ', '))
+    } else {
+        Write-Info "Nenhum navegador comum detectado; tentarei limpar quando pastas existirem."
+    }
+    $browserPatterns = @()
+    foreach ($b in $installedBrowsers) {
+        switch ($b) {
+            'Chrome' {
+                $browserPatterns += 'AppData\Local\Google\Chrome*\User Data\*\Cache'
+                $browserPatterns += 'AppData\Local\Google\Chrome*\User Data\*\Code Cache'
+                $browserPatterns += 'AppData\Local\Google\Chrome*\User Data\*\GPUCache'
+                $browserPatterns += 'AppData\Local\Google\Chrome*\User Data\*\Service Worker\CacheStorage'
+            }
+            'Edge' {
+                $browserPatterns += 'AppData\Local\Microsoft\Edge*\User Data\*\Cache'
+                $browserPatterns += 'AppData\Local\Microsoft\Edge*\User Data\*\Code Cache'
+                $browserPatterns += 'AppData\Local\Microsoft\Edge*\User Data\*\GPUCache'
+                $browserPatterns += 'AppData\Local\Microsoft\Edge*\User Data\*\Service Worker\CacheStorage'
+            }
+            'Brave' {
+                $browserPatterns += 'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Cache'
+                $browserPatterns += 'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Code Cache'
+                $browserPatterns += 'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\GPUCache'
+                $browserPatterns += 'AppData\Local\BraveSoftware\Brave-Browser\User Data\*\Service Worker\CacheStorage'
+            }
+            'Opera' {
+                $browserPatterns += 'AppData\Local\Opera Software\Opera Stable\Cache'
+                $browserPatterns += 'AppData\Local\Opera Software\Opera Stable\Code Cache'
+                $browserPatterns += 'AppData\Local\Opera Software\Opera Stable\GPUCache'
+                $browserPatterns += 'AppData\Local\Opera Software\Opera Stable\Service Worker\CacheStorage'
+                $browserPatterns += 'AppData\Local\Opera Software\Opera GX Stable\Cache'
+                $browserPatterns += 'AppData\Local\Opera Software\Opera GX Stable\Code Cache'
+                $browserPatterns += 'AppData\Local\Opera Software\Opera GX Stable\GPUCache'
+                $browserPatterns += 'AppData\Local\Opera Software\Opera GX Stable\Service Worker\CacheStorage'
+            }
+            'Firefox' {
+                $browserPatterns += 'AppData\Local\Mozilla\Firefox\Profiles\*\cache2'
+                $browserPatterns += 'AppData\Local\Mozilla\Firefox\Profiles\*\startupCache'
+            }
+            'Vivaldi' {
+                $browserPatterns += 'AppData\Local\Vivaldi\User Data\*\Cache'
+                $browserPatterns += 'AppData\Local\Vivaldi\User Data\*\Code Cache'
+                $browserPatterns += 'AppData\Local\Vivaldi\User Data\*\GPUCache'
+                $browserPatterns += 'AppData\Local\Vivaldi\User Data\*\Service Worker\CacheStorage'
+            }
+            'Dragon' {
+                $browserPatterns += 'AppData\Local\Comodo\Dragon\User Data\*\Cache'
+                $browserPatterns += 'AppData\Local\Comodo\Dragon\User Data\*\Code Cache'
+                $browserPatterns += 'AppData\Local\Comodo\Dragon\User Data\*\GPUCache'
+                $browserPatterns += 'AppData\Local\Comodo\Dragon\User Data\*\Service Worker\CacheStorage'
+            }
+            'Comet' {
+                $browserPatterns += 'AppData\Local\CometBrowser\User Data\*\Cache'
+                $browserPatterns += 'AppData\Local\CometBrowser\User Data\*\Code Cache'
+                $browserPatterns += 'AppData\Local\CometBrowser\User Data\*\GPUCache'
+                $browserPatterns += 'AppData\Local\CometBrowser\User Data\*\Service Worker\CacheStorage'
+            }
+        }
+    }
 
     $premiereTargets = @(
         'AppData\Roaming\Adobe\Common\Media Cache',
@@ -1299,7 +1451,15 @@ function Acao-10-LimpezaTemporarios {
             Label  = 'Cache de atualizacoes (SoftwareDistribution\Download)'
             Action = {
                 param($ctx, $logList)
+                try {
+                    Stop-Service -Name wuauserv -Force -ErrorAction SilentlyContinue
+                    Stop-Service -Name bits -Force -ErrorAction SilentlyContinue
+                } catch {}
                 $freed = Clear-DirectoryContents -Path $softwareDistributionPath -Report $logList -Source $ctx.Label
+                try {
+                    Start-Service -Name wuauserv -ErrorAction SilentlyContinue
+                    Start-Service -Name bits -ErrorAction SilentlyContinue
+                } catch {}
                 if ($logList -and $freed -gt 0) {
                     $logList.Add([PSCustomObject]@{
                         Timestamp = Get-Date
@@ -1346,7 +1506,7 @@ function Acao-10-LimpezaTemporarios {
             }
         },
         [PSCustomObject]@{
-            Label  = 'Caches de navegadores (Chrome, Edge, Brave, Opera, Firefox)'
+            Label  = 'Caches de navegadores (auto: Chrome, Edge, Firefox, Brave, Opera, Comet, Vivaldi, Dragon)'
             Action = {
                 param($ctx, $logList)
                 if (-not $users) {

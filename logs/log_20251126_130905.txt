@@ -1,0 +1,23 @@
+﻿**********************
+Início da transcrição do Windows PowerShell
+Hora de início: 20251126130905
+Nome de Usuário: NWB-001\suporte
+Executar como Usuário: NWB-001\suporte
+Nome da Configuração: 
+Computador: NWB-001 (Microsoft Windows NT 10.0.26200.0)
+Aplicativo Host: C:\WINDOWS\System32\WindowsPowerShell\v1.0\powershell.exe -ExecutionPolicy Bypass -File .\menu.ps1
+ID do Processo: 20244
+PSVersion: 5.1.26100.7019
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7019
+BuildVersion: 10.0.26100.7019
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+[!]  Este script precisa de privilegios de administrador. Pedindo elevacao...
+**********************
+Fim da transcrição do Windows PowerShell
+Hora de término: 20251126130921
+**********************

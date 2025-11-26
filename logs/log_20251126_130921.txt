@@ -1,0 +1,147 @@
+﻿**********************
+Início da transcrição do Windows PowerShell
+Hora de início: 20251126130921
+Nome de Usuário: NWB-001\suporte
+Executar como Usuário: NWB-001\suporte
+Nome da Configuração: 
+Computador: NWB-001 (Microsoft Windows NT 10.0.26200.0)
+Aplicativo Host: C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -NoProfile -ExecutionPolicy Bypass -File C:\dev2\menu_pwshell2\menu_pwshell\menu.ps1
+ID do Processo: 6032
+PSVersion: 5.1.26100.7019
+PSEdition: Desktop
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1.26100.7019
+BuildVersion: 10.0.26100.7019
+CLRVersion: 4.0.30319.42000
+WSManStackVersion: 3.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+**********************
+PS>TerminatingError(Set-ExecutionPolicy): "O Windows PowerShell atualizou sua política de execução com êxito, mas a configuração foi substituída por uma política definida em um escopo mais específico. Devido à substituição, o shell manterá sua política de execução efetiva atual de Unrestricted. Digite "Get-ExecutionPolicy -List" para exibir suas configurações de política de execução. Para obter mais informações, consulte "Get-Help Set-ExecutionPolicy"."
+Menu de Manutencao do Windows
+
+====== PREPARACAO INICIAL ======
+[ 1] Verificar/instalar dependencias
+[ 2] Prosseguir para o menu principal
+[ 0] Sair
+================================
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+[..]  Selecione os itens que deseja limpar:
+PS>TerminatingError(): "Falha na invocação do método porque [System.Int32] não contém um método denominado 'ToArray'."
+[!]  Falha ao encerrar processos bloqueadores: Falha na invocação do método porque [System.Int32] não contém um método denominado 'ToArray'.
+[..]  Nenhum navegador comum detectado; tentarei limpar quando pastas existirem.
+[1] Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)
+[2] Prefetch do Windows
+[3] Cache de atualizacoes (SoftwareDistribution\Download)
+[4] Pastas temporarias basicas dos usuarios
+[5] Caches de navegadores (auto: Chrome, Edge, Firefox, Brave, Opera, Comet, Vivaldi, Dragon)
+[6] Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)
+[7] Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)
+[..]  Executando: Arquivos temporarios do sistema (TEMP, TMP, Windows\Temp)
+[..]  Limpando: C:\Users\suporte\AppData\Local\Temp
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo.
+[..]  Limpando: C:\WINDOWS\Temp
+[..]  Espaco liberado nesta etapa: 8,37 KB
+[..]  Executando: Prefetch do Windows
+[..]  Limpando: C:\WINDOWS\Prefetch
+[..]  Espaco liberado nesta etapa: 206,66 KB
+[..]  Executando: Cache de atualizacoes (SoftwareDistribution\Download)
+[..]  Limpando: C:\WINDOWS\SoftwareDistribution\Download
+AVISO: Aguardando que o serviço 'Serviço de Transferência Inteligente em Segundo Plano (bits)' seja iniciado...
+AVISO: Aguardando que o serviço 'Serviço de Transferência Inteligente em Segundo Plano (bits)' seja iniciado...
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Pastas temporarias basicas dos usuarios
+[..]  Perfil: gabriel
+[..]  Limpando: C:\Users\gabriel\AppData\Local\Temp
+[..]  Limpando: C:\Users\gabriel\AppData\Local\Microsoft\Windows\INetCache
+[..]  Limpando: C:\Users\gabriel\AppData\LocalLow\Microsoft\CryptnetUrlCache
+[..]  Perfil: suporte
+[..]  Limpando: C:\Users\suporte\AppData\Local\Temp
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0ba5e127-379e-4d42-941b-b8a408e51d47.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\0dc55c86-627f-4bcb-a8f4-cd2c17bd7f3d.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\170dfd98-1449-4623-b0b3-50cacb6401a1.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\353016c6-d782-4fbf-bb11-9c3ee57f5d14.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\ab496cf1-a2af-49dd-a64b-e5279c60c97c.tmp' porque ele está sendo usado por outro processo.
+PS>TerminatingError(Remove-Item): "O comando em execução parou porque a variável preferencial "ErrorActionPreference" ou o parâmetro comum está definido como Stop: Não é possível remover o item C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo."
+[!]  Nao foi possivel remover C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp: O processo não pode acessar o arquivo 'C:\Users\suporte\AppData\Local\Temp\bdee9b57-f126-4197-b759-92d0c44effee.tmp' porque ele está sendo usado por outro processo.
+[..]  Limpando: C:\Users\suporte\AppData\Local\Microsoft\Windows\INetCache
+[..]  Limpando: C:\Users\suporte\AppData\LocalLow\Microsoft\CryptnetUrlCache
+[..]  Espaco liberado nesta etapa: 882 B
+[..]  Executando: Caches de navegadores (auto: Chrome, Edge, Firefox, Brave, Opera, Comet, Vivaldi, Dragon)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Caches do Adobe Premiere (Media Cache, Media Cache Files, Peak Files)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Media Cache
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Media Cache Files
+[..]  Limpando: C:\Users\suporte\AppData\Roaming\Adobe\Common\Peak Files
+[..]  Nenhum item removido nesta etapa.
+[..]  Executando: Caches do Adobe After Effects (Cache, Disk Cache, Media Cache)
+[..]  Perfil: gabriel
+[..]  Perfil: suporte
+[..]  Nenhum item removido nesta etapa.
+[OK]  Limpeza concluida. Total liberado: 215,88 KB
+[..]  Log detalhado salvo em: C:\dev2\menu_pwshell2\menu_pwshell\Logs\limpeza_temporarios_20251126_131002.csv
+
+Menu de Manutencao do Windows
+
+========== MENU DE MANUTENCAO ==========
+[ 1] Verificar atualizacoes do Windows
+[ 2] Instalar atualizacoes do Windows
+[ 3] Winget: Atualizar aplicativos
+[ 4] Winget: Desinstalar aplicativos
+[ 5] Chocolatey: Instalar/Verificar
+[ 6] Chocolatey: Instalar programas
+[ 7] Chocolatey: Atualizar tudo
+[ 8] Chocolatey: Desinstalar pacote
+[ 9] Mapear/Desmapear unidade de rede
+[10] Limpeza de temporarios
+[11] Remover perfis de usuario
+[12] Debloat do Windows (Sycnex/Titus/Custom)
+[13] Backup com Robocopy
+[14] Exclusao forcada de pasta
+[15] Limpeza de registro (Glary Utilities)
+[16] Gerenciar Appx (instalar/remover)
+[ S] Sair  |  [Q] Quit  |  [0] Zero para sair
+=========================================
+**********************
+Fim da transcrição do Windows PowerShell
+Hora de término: 20251126132942
+**********************
